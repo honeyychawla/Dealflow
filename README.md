@@ -358,3 +358,7 @@ collectors/linkedin-sync.md   the computer-use routine
 rubric.json                   the sorting policy
 tests/                        python3 -m unittest discover -s tests
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
