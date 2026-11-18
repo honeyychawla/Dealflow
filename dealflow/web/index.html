@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Dealflow</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app.css">
+  <script src="/theme.js"></script>
+</head>
+<body>
+  <a class="skip" href="#pane">Skip to conversations</a>
+  <div class="app" id="app">
+    <header class="hdr">
+      <button type="button" class="ib menu-btn" id="menu-btn" aria-label="Main menu" title="Main menu"></button>
+      <a class="brand" href="#/inbox" id="brand" aria-label="Dealflow, go to the inbox">
+        <svg class="logo" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <rect class="logo-bg" x="2" y="4" width="28" height="24" rx="7"/>
+          <rect class="logo-a" x="8" y="10" width="16" height="3" rx="1.5"/>
+          <rect class="logo-b" x="8" y="14.5" width="12" height="3" rx="1.5"/>
+          <rect class="logo-c" x="8" y="19" width="8" height="3" rx="1.5"/>
+        </svg>
+        <span class="brand-t">Dealflow</span>
+      </a>
+      <label class="search" id="search-box"></label>
+      <div class="hdr-r" id="hdr-status"></div>
+      <button type="button" class="ib" id="theme-btn" aria-label="Switch between light and dark" title="Light / dark"></button>
+      <button type="button" class="ib" id="gear" aria-label="Settings" title="Settings"></button>
+    </header>
+    <div class="body">
+      <nav class="nav" id="nav" aria-label="Queues, labels and channels"></nav>
+      <main class="pane" id="pane" tabindex="-1"></main>
+    </div>
+    <div class="scrim" id="scrim" hidden></div>
+    <div class="menu" id="menu" role="menu" hidden></div>
+  </div>
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+  <noscript>Dealflow needs JavaScript to run.</noscript>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

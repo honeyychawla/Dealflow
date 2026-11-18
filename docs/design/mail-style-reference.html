@@ -1,0 +1,1656 @@
+<title>Dealflow Mail View</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<style>
+/* Layout: mail-client shell. 64px header with a pill search; 256px nav rail (queues, labels, channels); the list or the open conversation sits in one rounded white surface on a tinted ground. Jev's priorities are the inbox tabs. */
+:root{
+  --bg:#f6f8fc; --surface:#ffffff; --fg:#1f1f1f; --fg-2:#444746; --fg-3:#747775;
+  --line:rgba(100,121,143,.16); --line-2:#c4c7c5; --hover:rgba(68,71,70,.08);
+  --nav-active:#d3e3fd; --nav-active-fg:#041e49;
+  --primary:#0b57d0; --on-primary:#ffffff; --primary-container:#c2e7ff; --on-primary-container:#001d35;
+  --row-read:#f2f6fc; --row-unread:#ffffff; --row-checked:#c2dbff;
+  --row-shadow:inset 1px 0 0 #dadce0,inset -1px 0 0 #dadce0,0 1px 2px 0 rgba(60,64,67,.3),0 1px 3px 1px rgba(60,64,67,.15);
+  --search-bg:#e9eef6; --search-focus:#ffffff; --search-shadow:0 1px 1px rgba(65,69,73,.3),0 1px 3px 1px rgba(65,69,73,.15);
+  --cta-shadow:0 1px 3px rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15);
+  --menu-shadow:0 2px 6px 2px rgba(60,64,67,.15),0 1px 2px rgba(60,64,67,.3);
+  --composer-shadow:0 1px 2px rgba(60,64,67,.3),0 2px 6px 2px rgba(60,64,67,.15);
+  --jev-bg:#eef3fc; --jev-edge:rgba(11,87,208,.18);
+  --review-bg:#fff4d6; --review-fg:#5c4300;
+  --star:#e8a600; --nudge:#b05b00; --av-fg:#ffffff; --chip-on-fg:#ffffff;
+  --toast-bg:#303030; --toast-fg:#f2f2f2; --toast-link:#a8c7fa;
+  --scrim:rgba(32,33,36,.4); --focus:#0b57d0; --logo-bg:#e3eaf5;
+  --tier-P0:#d93025; --tier-P1:#e37400; --tier-P2:#1a73e8; --tier-P3:#80868b;
+
+  --l-default-bg:#e8eaed; --l-default-fg:#3c4043; --l-default-dot:#9aa0a6;
+  --l-gray-bg:#e3e3e3; --l-gray-fg:#3c3c3c; --l-gray-dot:#80868b;
+  --l-brown-bg:#f0dfd6; --l-brown-fg:#4a2a1a; --l-brown-dot:#9a6b52;
+  --l-orange-bg:#ffdcc2; --l-orange-fg:#5a2a00; --l-orange-dot:#e8710a;
+  --l-yellow-bg:#ffefc2; --l-yellow-fg:#4a3500; --l-yellow-dot:#e8a600;
+  --l-green-bg:#c4eed0; --l-green-fg:#0a3818; --l-green-dot:#188038;
+  --l-blue-bg:#d3e3fd; --l-blue-fg:#041e49; --l-blue-dot:#1a73e8;
+  --l-purple-bg:#eaddff; --l-purple-fg:#4f378b; --l-purple-dot:#8e63ce;
+  --l-pink-bg:#ffd8e4; --l-pink-fg:#5d1133; --l-pink-dot:#d01884;
+  --l-red-bg:#fbd3d0; --l-red-fg:#601410; --l-red-dot:#d93025;
+
+  --font:"Roboto",system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"Roboto Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131314; --surface:#1e1f20; --fg:#e3e3e3; --fg-2:#c4c7c5; --fg-3:#8e918f;
+    --line:rgba(255,255,255,.08); --line-2:#444746; --hover:rgba(227,227,227,.08);
+    --nav-active:#004a77; --nav-active-fg:#c2e7ff;
+    --primary:#a8c7fa; --on-primary:#062e6f; --primary-container:#004a77; --on-primary-container:#c2e7ff;
+    --row-read:#1e1f20; --row-unread:#28292b; --row-checked:#0b3a63;
+    --row-shadow:inset 1px 0 0 rgba(255,255,255,.12),inset -1px 0 0 rgba(255,255,255,.12),0 1px 3px rgba(0,0,0,.6);
+    --search-bg:#282a2c; --search-focus:#303134; --search-shadow:0 1px 3px rgba(0,0,0,.6);
+    --cta-shadow:0 1px 3px rgba(0,0,0,.5),0 4px 8px 3px rgba(0,0,0,.3);
+    --menu-shadow:0 2px 6px 2px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.6);
+    --composer-shadow:0 1px 2px rgba(0,0,0,.6),0 2px 6px 2px rgba(0,0,0,.35);
+    --jev-bg:#1c2633; --jev-edge:rgba(168,199,250,.2);
+    --review-bg:#3d3013; --review-fg:#ffdf99;
+    --star:#f6c344; --nudge:#ffb870; --av-fg:#1f1f1f; --chip-on-fg:#1f1f1f;
+    --toast-bg:#e3e3e3; --toast-fg:#1f1f1f; --toast-link:#0b57d0;
+    --scrim:rgba(0,0,0,.55); --focus:#a8c7fa; --logo-bg:#2a2f38;
+    --tier-P0:#f28b82; --tier-P1:#ffb870; --tier-P2:#7cacf8; --tier-P3:#9aa0a6;
+    --l-default-bg:#3c4043; --l-default-fg:#e8eaed; --l-default-dot:#9aa0a6;
+    --l-gray-bg:#444746; --l-gray-fg:#e3e3e3; --l-gray-dot:#9aa0a6;
+    --l-brown-bg:#5a3a28; --l-brown-fg:#f0dfd6; --l-brown-dot:#c49a83;
+    --l-orange-bg:#6e3600; --l-orange-fg:#ffdcc2; --l-orange-dot:#ffb870;
+    --l-yellow-bg:#5c4300; --l-yellow-fg:#ffefc2; --l-yellow-dot:#fdd663;
+    --l-green-bg:#0f5223; --l-green-fg:#c4eed0; --l-green-dot:#6dd58c;
+    --l-blue-bg:#0842a0; --l-blue-fg:#d3e3fd; --l-blue-dot:#7cacf8;
+    --l-purple-bg:#4f378b; --l-purple-fg:#eaddff; --l-purple-dot:#b69df8;
+    --l-pink-bg:#7d2950; --l-pink-fg:#ffd8e4; --l-pink-dot:#ff8bcb;
+    --l-red-bg:#8c1d18; --l-red-fg:#fbd3d0; --l-red-dot:#f28b82;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131314; --surface:#1e1f20; --fg:#e3e3e3; --fg-2:#c4c7c5; --fg-3:#8e918f;
+  --line:rgba(255,255,255,.08); --line-2:#444746; --hover:rgba(227,227,227,.08);
+  --nav-active:#004a77; --nav-active-fg:#c2e7ff;
+  --primary:#a8c7fa; --on-primary:#062e6f; --primary-container:#004a77; --on-primary-container:#c2e7ff;
+  --row-read:#1e1f20; --row-unread:#28292b; --row-checked:#0b3a63;
+  --row-shadow:inset 1px 0 0 rgba(255,255,255,.12),inset -1px 0 0 rgba(255,255,255,.12),0 1px 3px rgba(0,0,0,.6);
+  --search-bg:#282a2c; --search-focus:#303134; --search-shadow:0 1px 3px rgba(0,0,0,.6);
+  --cta-shadow:0 1px 3px rgba(0,0,0,.5),0 4px 8px 3px rgba(0,0,0,.3);
+  --menu-shadow:0 2px 6px 2px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.6);
+  --composer-shadow:0 1px 2px rgba(0,0,0,.6),0 2px 6px 2px rgba(0,0,0,.35);
+  --jev-bg:#1c2633; --jev-edge:rgba(168,199,250,.2);
+  --review-bg:#3d3013; --review-fg:#ffdf99;
+  --star:#f6c344; --nudge:#ffb870; --av-fg:#1f1f1f; --chip-on-fg:#1f1f1f;
+  --toast-bg:#e3e3e3; --toast-fg:#1f1f1f; --toast-link:#0b57d0;
+  --scrim:rgba(0,0,0,.55); --focus:#a8c7fa; --logo-bg:#2a2f38;
+  --tier-P0:#f28b82; --tier-P1:#ffb870; --tier-P2:#7cacf8; --tier-P3:#9aa0a6;
+  --l-default-bg:#3c4043; --l-default-fg:#e8eaed; --l-default-dot:#9aa0a6;
+  --l-gray-bg:#444746; --l-gray-fg:#e3e3e3; --l-gray-dot:#9aa0a6;
+  --l-brown-bg:#5a3a28; --l-brown-fg:#f0dfd6; --l-brown-dot:#c49a83;
+  --l-orange-bg:#6e3600; --l-orange-fg:#ffdcc2; --l-orange-dot:#ffb870;
+  --l-yellow-bg:#5c4300; --l-yellow-fg:#ffefc2; --l-yellow-dot:#fdd663;
+  --l-green-bg:#0f5223; --l-green-fg:#c4eed0; --l-green-dot:#6dd58c;
+  --l-blue-bg:#0842a0; --l-blue-fg:#d3e3fd; --l-blue-dot:#7cacf8;
+  --l-purple-bg:#4f378b; --l-purple-fg:#eaddff; --l-purple-dot:#b69df8;
+  --l-pink-bg:#7d2950; --l-pink-fg:#ffd8e4; --l-pink-dot:#ff8bcb;
+  --l-red-bg:#8c1d18; --l-red-fg:#fbd3d0; --l-red-dot:#f28b82;
+  color-scheme:dark;
+}
+.c-default{--lb:var(--l-default-bg);--lf:var(--l-default-fg);--dc:var(--l-default-dot)}
+.c-gray{--lb:var(--l-gray-bg);--lf:var(--l-gray-fg);--dc:var(--l-gray-dot)}
+.c-brown{--lb:var(--l-brown-bg);--lf:var(--l-brown-fg);--dc:var(--l-brown-dot)}
+.c-orange{--lb:var(--l-orange-bg);--lf:var(--l-orange-fg);--dc:var(--l-orange-dot)}
+.c-yellow{--lb:var(--l-yellow-bg);--lf:var(--l-yellow-fg);--dc:var(--l-yellow-dot)}
+.c-green{--lb:var(--l-green-bg);--lf:var(--l-green-fg);--dc:var(--l-green-dot)}
+.c-blue{--lb:var(--l-blue-bg);--lf:var(--l-blue-fg);--dc:var(--l-blue-dot)}
+.c-purple{--lb:var(--l-purple-bg);--lf:var(--l-purple-fg);--dc:var(--l-purple-dot)}
+.c-pink{--lb:var(--l-pink-bg);--lf:var(--l-pink-fg);--dc:var(--l-pink-dot)}
+.c-red{--lb:var(--l-red-bg);--lf:var(--l-red-fg);--dc:var(--l-red-dot)}
+.t-P0{--tc:var(--tier-P0)} .t-P1{--tc:var(--tier-P1)} .t-P2{--tc:var(--tier-P2)} .t-P3{--tc:var(--tier-P3)}
+
+html{height:100%;box-sizing:border-box}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--fg);font:14px/1.45 var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.i{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.grow{flex:1}
+.muted{color:var(--fg-3)}
+
+/* shell */
+.app{position:relative;display:flex;flex-direction:column;height:100%}
+.hdr{display:flex;align-items:center;gap:8px;height:64px;padding:8px 16px 8px 12px;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:10px;width:200px;flex-shrink:0;color:var(--fg-2);font-size:22px;letter-spacing:-.01em}
+.search{display:flex;align-items:center;gap:8px;flex:1;max-width:720px;min-width:0;height:48px;padding:0 6px 0 16px;border-radius:24px;background:var(--search-bg);color:var(--fg-2)}
+.search:focus-within{background:var(--search-focus);box-shadow:var(--search-shadow)}
+.search input{flex:1;min-width:0;border:0;outline:none;background:none;color:var(--fg);font:inherit;font-size:16px}
+.search input::placeholder{color:var(--fg-2)}
+.search input::-webkit-search-cancel-button{display:none}
+.hdr-r{display:flex;align-items:center;gap:12px;margin-left:auto;padding-left:12px;white-space:nowrap}
+.sample{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--fg-2);font-size:12px}
+.synced{color:var(--fg-3);font-size:13px}
+.body{display:flex;flex:1;min-height:0}
+.scrim{position:absolute;inset:0;z-index:35;background:var(--scrim)}
+
+/* nav */
+.nav{display:flex;flex-direction:column;width:256px;flex-shrink:0;overflow-y:auto;padding:4px 0 16px;transition:width .2s ease}
+.cta{display:inline-flex;align-items:center;align-self:flex-start;gap:12px;height:56px;margin:4px 0 16px 8px;padding:0 24px 0 16px;border-radius:16px;background:var(--primary-container);color:var(--on-primary-container);font-weight:500;white-space:nowrap;transition:box-shadow .15s}
+.cta:hover{box-shadow:var(--cta-shadow)}
+.ni{display:flex;align-items:center;gap:18px;height:32px;margin-right:16px;padding:0 12px 0 26px;border-radius:0 16px 16px 0;color:var(--fg);white-space:nowrap}
+.ni:hover{background:var(--hover)}
+.ni.on{background:var(--nav-active);color:var(--nav-active-fg);font-weight:700}
+.ni-l{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.cnt{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.cnt.plain{font-weight:400;color:var(--fg-3)}
+.ni.on .cnt.plain{color:inherit}
+.nh{padding:18px 16px 6px 26px;font-size:16px;font-weight:500;white-space:nowrap}
+.lab{color:var(--dc)}
+.lab path{fill:currentColor;stroke:none}
+.chdot{display:grid;place-items:center;width:20px;height:20px;flex-shrink:0}
+.chdot::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--l-green-dot)}
+.chdot.warn::before{background:var(--l-yellow-dot)}
+.app.rail .nav{width:72px}
+.app.rail .ni{justify-content:center;width:56px;margin:0 8px;padding:0;border-radius:16px}
+.app.rail .ni-l,.app.rail .cnt,.app.rail .nh,.app.rail .cta span{display:none}
+.app.rail .cta{padding:0 16px;margin-left:8px}
+
+/* pane */
+.pane{display:flex;flex-direction:column;flex:1;min-width:0;margin:0 16px 16px 0;overflow:hidden;border-radius:16px;background:var(--surface)}
+.toolbar{display:flex;align-items:center;gap:2px;height:48px;padding:0 8px 0 10px;flex-shrink:0}
+.ib{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;flex-shrink:0;color:var(--fg-2)}
+.ib:hover{background:var(--hover)}
+.ib:disabled{opacity:.38;cursor:default;background:none}
+.ib.sm{width:20px;height:40px;border-radius:4px;margin-left:-6px}
+.ib.spin .i{animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tsep{width:1px;height:20px;margin:0 6px;background:var(--line-2)}
+.sel-n{margin-left:8px;color:var(--fg-2);font-size:13px;white-space:nowrap}
+.pager{padding:0 8px;color:var(--fg-2);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.box{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:2px;box-shadow:inset 0 0 0 2px var(--fg-3);color:var(--on-primary)}
+.box.on,.box.mixed{background:var(--primary);box-shadow:none}
+.box .i{stroke-width:2.6}
+.ck-all{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%}
+.ck-all:hover{background:var(--hover)}
+.tabs{display:flex;flex-shrink:0;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabx{position:relative;display:flex;align-items:center;gap:16px;flex:1 1 0;min-width:156px;max-width:256px;height:56px;padding:0 16px;color:var(--fg-2)}
+.tabx:hover{background:var(--hover)}
+.tabx.on{color:var(--tc)}
+.tabx.on::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--tc)}
+.tab-txt{display:grid;min-width:0}
+.tab-l{display:flex;align-items:center;gap:8px;font-weight:500;white-space:nowrap}
+.newchip{display:inline-flex;align-items:center;height:16px;padding:0 6px;border-radius:8px;background:var(--tc);color:var(--chip-on-fg);font-size:11px;font-weight:500}
+.tab-prev{overflow:hidden;color:var(--fg-3);font-size:12px;white-space:nowrap;text-overflow:ellipsis}
+.scroller{flex:1;min-height:0;overflow-y:auto}
+.view-title{display:none;padding:12px 16px 4px;color:var(--fg-2);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+.qbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line);color:var(--fg-2)}
+.link{color:var(--primary);font-weight:500}
+.link:hover{text-decoration:underline}
+
+/* rows */
+.row{position:relative;display:grid;grid-template-columns:20px 20px 20px 196px minmax(0,1fr) 84px;align-items:center;column-gap:12px;min-height:40px;padding:0 16px 0 14px;border-bottom:1px solid var(--line);background:var(--row-read);cursor:pointer}
+.row.unread{background:var(--row-unread)}
+.row.checked{background:var(--row-checked)}
+.row:hover{z-index:1;box-shadow:var(--row-shadow)}
+.row.cursor::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary)}
+.ck,.st{display:inline-grid;place-items:center;width:20px;height:20px}
+.st .i{color:var(--fg-3)}
+.st.on .i{color:var(--star);fill:var(--star)}
+.imp{display:inline-grid;place-items:center;width:20px;height:20px}
+.imp path{fill:var(--tc);stroke:none}
+.imp.t-P3 path{fill:none;stroke:var(--line-2);stroke-width:1.3}
+.av{display:none;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--dc);color:var(--av-fg);font-size:16px;font-weight:500}
+.row.checked .av{background:var(--primary);color:var(--on-primary)}
+.who{min-width:0;overflow:hidden;color:var(--fg);white-space:nowrap;text-overflow:ellipsis}
+.who .n{margin-left:4px;color:var(--fg-3);font-size:12px;font-weight:400}
+.row.unread .who,.row.unread .s{font-weight:700}
+.subj{display:flex;flex-direction:column;gap:6px;min-width:0;padding:10px 0}
+.line1{display:flex;align-items:center;gap:6px;min-width:0;white-space:nowrap}
+.lbls{display:flex;gap:4px;flex-shrink:0}
+.lb{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 6px;border-radius:4px;background:var(--lb);color:var(--lf);font-size:12px;font-weight:500;white-space:nowrap}
+.lb.outline{background:none;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--fg-2);font-weight:400}
+.txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.s{color:var(--fg)}
+.snip{color:var(--fg-2)}
+.nudge{color:var(--nudge);font-weight:500}
+.att{display:inline-flex;align-items:center;gap:6px;max-width:260px;height:30px;padding:0 12px 0 8px;border-radius:15px;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--fg-2);font-size:13px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;align-self:flex-start}
+.att .i{color:var(--l-red-dot)}
+.when{color:var(--fg-2);font-size:12px;text-align:right;white-space:nowrap}
+.row.unread .when{color:var(--fg);font-weight:700}
+.acts{position:absolute;top:0;right:8px;bottom:0;display:none;align-items:center;padding-left:12px;background:inherit}
+.row:hover .acts{display:flex}
+.row:hover .when{visibility:hidden}
+.empty{display:grid;justify-items:center;gap:6px;padding:72px 24px;color:var(--fg-2);text-align:center}
+.empty .i{color:var(--fg-3);margin-bottom:6px}
+.empty-t{color:var(--fg);font-size:16px}
+
+/* conversation */
+.convo{max-width:980px;padding:12px 24px 56px 20px}
+.c-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:8px 0 4px 56px}
+.c-subj{margin:0;font-size:22px;line-height:1.3;font-weight:400;text-wrap:balance}
+.jev{margin:14px 0 10px 56px;padding:14px 16px 12px;border-radius:16px;background:var(--jev-bg);box-shadow:inset 0 0 0 1px var(--jev-edge)}
+.jev-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.jev-h .spark{color:var(--primary)}
+.jev-h b{font-weight:500}
+.jev-brief{max-width:72ch;margin:8px 0 10px}
+.sig{display:flex;flex-wrap:wrap;gap:6px}
+.sg{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border-radius:8px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);color:var(--fg-2);font-size:12.5px;white-space:nowrap}
+.sg b{color:var(--fg);font-weight:500}
+.sg.risk b{color:var(--l-red-dot)}
+.review{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--review-bg)}
+.review-t{flex:1 1 240px;color:var(--review-fg);font-weight:500}
+.more{margin-top:10px}
+.more summary{display:inline-flex;align-items:center;gap:4px;color:var(--primary);font-weight:500;font-size:13px;cursor:pointer;list-style:none;border-radius:4px;padding:2px 4px;margin-left:-4px}
+.more summary::-webkit-details-marker{display:none}
+.more summary:hover{background:var(--hover)}
+.more[open] summary .i{transform:rotate(180deg)}
+.ans{display:grid;gap:2px;margin-top:8px}
+.ans-row{display:grid;grid-template-columns:150px minmax(0,1fr) 96px 40px;align-items:center;gap:10px;min-height:26px;font-size:13px}
+.ans-q{color:var(--fg-2)}
+.ans-a{font-weight:500}
+.meter{height:6px;overflow:hidden;border-radius:3px;background:var(--line-2)}
+.meter i{display:block;height:100%;background:var(--primary)}
+.meter.risk i{background:var(--l-red-dot)}
+.ans-p{text-align:right;color:var(--fg-3);font-variant-numeric:tabular-nums}
+.thread{margin-top:6px}
+.m{display:grid;grid-template-columns:40px minmax(0,1fr);gap:16px;width:100%;padding:16px 0;border-top:1px solid var(--line)}
+.m:first-child{border-top:0}
+.m-av{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--dc);color:var(--av-fg);font-size:16px;font-weight:500}
+.m-av.me{background:var(--primary);color:var(--on-primary)}
+.m-main{display:block;min-width:0}
+.m-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;border-radius:4px}
+.m-head[data-msg]{cursor:pointer}
+.m-name{font-weight:700}
+.m-addr{color:var(--fg-2);font-size:12px}
+.m-time{margin-left:auto;color:var(--fg-2);font-size:12px;white-space:nowrap}
+.m-to{margin-top:2px;color:var(--fg-2);font-size:12px}
+.m-subj{margin-top:12px;font-weight:500}
+.m-body{max-width:72ch;margin-top:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.m.collapsed{padding:12px 0;cursor:pointer;text-align:left}
+.m.collapsed:hover .m-snip{color:var(--fg)}
+.m-snip{display:block;margin-top:2px;overflow:hidden;color:var(--fg-2);white-space:nowrap;text-overflow:ellipsis}
+.older{display:flex;align-items:center;gap:16px;width:100%;padding:6px 0;border-top:1px solid var(--line);color:var(--fg-2)}
+.older-n{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);font-weight:500}
+.older:hover .older-n{background:var(--hover)}
+.attcard{display:inline-flex;align-items:center;gap:10px;margin-top:14px;padding:10px 14px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-2);font-size:13px;max-width:100%}
+.attcard .i{color:var(--l-red-dot)}
+.hint{margin-top:10px;color:var(--fg-3);font-size:12.5px}
+.composer{margin:20px 0 0 56px;overflow:hidden;border-radius:16px;background:var(--surface);box-shadow:var(--composer-shadow)}
+.comp-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:12px 16px;border-bottom:1px solid var(--line);color:var(--fg-2);font-size:13px}
+.comp-h b{color:var(--fg);font-weight:500}
+.comp-body{max-width:72ch;padding:14px 16px;white-space:pre-wrap}
+.comp-f{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:4px 16px 16px;color:var(--fg-3);font-size:12.5px}
+.pill{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 20px;border-radius:18px;font-weight:500;white-space:nowrap}
+.pill.primary{background:var(--primary);color:var(--on-primary)}
+.pill.outline{box-shadow:inset 0 0 0 1px var(--line-2);color:var(--primary)}
+.pill.outline:hover,.pill.primary:hover{box-shadow:var(--cta-shadow)}
+.pill.sm{height:32px;padding:0 14px;font-size:13px}
+.nodraft{margin:20px 0 0 56px;color:var(--fg-3);font-size:13px}
+.keys{display:flex;flex-wrap:wrap;gap:6px 14px;margin:28px 0 0 56px;color:var(--fg-3);font-size:12px}
+kbd{margin-right:3px;padding:2px 5px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--fg-2);font:11px/1.2 var(--mono)}
+
+/* settings */
+.set-title{margin:0 0 0 4px;font-size:22px;font-weight:400}
+.set-tabs{padding:0 8px}
+.set-tab{position:relative;display:inline-flex;align-items:center;gap:6px;height:48px;padding:0 16px;color:var(--fg-2);font-weight:500;white-space:nowrap}
+.set-tab:hover{background:var(--hover)}
+.set-tab.on{color:var(--primary)}
+.set-tab.on::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--primary)}
+.sdot{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--fg-3)}
+.sdot.ok{background:var(--l-green-dot)}
+.sdot.warn{background:var(--l-yellow-dot)}
+.sdot.bad{background:var(--l-red-dot)}
+.set-page{max-width:920px;padding:16px 24px 56px}
+.set-note{display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:10px 14px;border-radius:12px;background:var(--jev-bg);color:var(--fg-2);font-size:13px}
+.set-note .i{color:var(--primary)}
+.set-head{padding:8px 0 4px}
+.set-head h2{margin:0;font-size:18px;font-weight:500}
+.set-status{display:flex;align-items:baseline;gap:8px;max-width:72ch;margin:6px 0 0;color:var(--fg-2)}
+.set-status.error{color:var(--l-red-dot)}
+.set-row{display:grid;grid-template-columns:220px minmax(0,1fr);gap:8px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.set-k{padding-top:9px;font-weight:500}
+.set-v{min-width:0}
+.help{max-width:60ch;margin:6px 0 0;color:var(--fg-2);font-size:12.5px}
+.help.wide{max-width:72ch;font-size:13.5px}
+.in{width:100%;max-width:440px;height:40px;padding:0 12px;border:1px solid var(--line-2);border-radius:4px;background:var(--surface);color:var(--fg);font:inherit}
+.in:focus{outline:none;border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+.in[readonly]{color:var(--fg-2)}
+.ta{height:auto;max-width:640px;padding:10px 12px;line-height:1.45;resize:vertical}
+.sw{position:relative;display:inline-flex;align-items:center;margin-top:4px;cursor:pointer}
+.sw input{position:absolute;inset:0;width:52px;height:32px;margin:0;opacity:0;cursor:pointer}
+.sw-t{position:relative;width:52px;height:32px;border-radius:16px;background:var(--search-bg);box-shadow:inset 0 0 0 2px var(--fg-3);transition:background .15s}
+.sw-t::after{content:"";position:absolute;top:8px;left:8px;width:16px;height:16px;border-radius:50%;background:var(--fg-3);transition:all .15s}
+.sw input:checked + .sw-t{background:var(--primary);box-shadow:none}
+.sw input:checked + .sw-t::after{top:4px;left:24px;width:24px;height:24px;background:var(--on-primary)}
+.sw input:focus-visible + .sw-t{outline:2px solid var(--focus);outline-offset:2px}
+.set-adv{border-bottom:1px solid var(--line)}
+.set-adv > summary{display:flex;align-items:center;gap:4px;padding:14px 0;color:var(--primary);font-weight:500;cursor:pointer;list-style:none}
+.set-adv > summary::-webkit-details-marker{display:none}
+.set-adv[open] > summary .i{transform:rotate(180deg)}
+.set-block .set-adv{border-bottom:0}
+.set-act{display:flex;flex-wrap:wrap;gap:8px;padding:16px 0 4px}
+.pill:disabled{opacity:.38;cursor:default;box-shadow:none!important}
+.set-sub{margin:20px 0 0;font-size:16px;font-weight:500}
+.accts{display:grid;justify-items:start;gap:12px;padding:12px 0 4px}
+.acct{width:100%;padding:14px 16px 12px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line-2)}
+.acct.removing{opacity:.72}
+.acct-h{display:flex;align-items:center;gap:10px}
+.acct-h h3{margin:0;font-size:15px;font-weight:500}
+.acct-h .i{color:var(--fg-2)}
+.acct-s{margin:4px 0 0;color:var(--fg-2);font-size:13px}
+.fld{display:grid;gap:6px;margin-top:14px}
+.fld > label,.fld-l{font-size:13px;font-weight:500}
+.res{display:flex;align-items:flex-start;gap:8px;max-width:72ch;margin:10px 0 0;font-size:13px}
+.res.ok{color:var(--l-green-dot)}
+.res.bad{color:var(--l-red-dot)}
+.set-block{padding:20px 0;border-bottom:1px solid var(--line)}
+.set-block:last-child{border-bottom:0}
+.set-block h3{margin:0;font-size:16px;font-weight:500}
+.guide{display:grid;gap:8px;max-width:72ch;margin:10px 0 0;padding-left:20px;color:var(--fg-2)}
+.weights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 24px;max-width:680px}
+.weight{display:grid;grid-template-columns:130px minmax(0,1fr) 32px;align-items:center;gap:10px;font-size:13px}
+.weight input{width:100%;accent-color:var(--primary)}
+.weight output{color:var(--fg-2);text-align:right;font-variant-numeric:tabular-nums}
+.cutoffs{display:flex;flex-wrap:wrap;gap:12px}
+.cutoff{display:grid;gap:4px;color:var(--fg-2);font-size:13px}
+.cutoff .in{width:110px}
+.import{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px}
+.import .in{width:120px}
+.file{max-width:100%;color:var(--fg-2);font:inherit}
+.copyrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.copyrow .in{flex:1 1 260px}
+
+/* menu + toast */
+.menu{position:absolute;z-index:60;min-width:180px;padding:8px 0;border-radius:4px;background:var(--surface);box-shadow:var(--menu-shadow)}
+.mi{display:flex;align-items:center;gap:10px;width:100%;height:32px;padding:0 16px}
+.mi:hover,.mi:focus-visible{background:var(--hover);outline:none}
+.toast{position:absolute;left:24px;bottom:24px;z-index:70;display:flex;align-items:center;gap:16px;max-width:calc(100% - 48px);min-height:48px;padding:6px 8px 6px 16px;border-radius:4px;background:var(--toast-bg);color:var(--toast-fg);box-shadow:var(--menu-shadow)}
+.toast button{height:36px;padding:0 10px;border-radius:4px;color:var(--toast-link);font-weight:500}
+.menu-btn{flex-shrink:0}
+
+@media (max-width:960px){
+  .row{grid-template-columns:20px 20px 20px 150px minmax(0,1fr) 72px}
+  .synced{display:none}
+}
+@media (max-width:720px){
+  .hdr{padding-right:12px}
+  .brand{width:auto}
+  .brand-t,.hdr-r{display:none}
+  .nav{position:absolute;top:0;bottom:0;left:0;z-index:40;width:min(288px,86%);background:var(--bg);transform:translateX(-102%);visibility:hidden;transition:transform .2s ease,visibility 0s linear .2s;box-shadow:var(--menu-shadow)}
+  .app.nav-open .nav{transform:none;visibility:visible;transition:transform .2s ease}
+  .app.rail .nav{width:min(288px,86%)}
+  .pane{margin:0;border-radius:16px 16px 0 0}
+  .view-title{display:block}
+  .tabx{min-width:128px;gap:10px;padding:0 12px}
+  .tab-prev{display:none}
+  .pager-t{display:none}
+  .row{grid-template-columns:40px minmax(0,1fr) auto;grid-template-areas:"av who when" "av subj st";align-items:start;column-gap:14px;row-gap:0;padding:12px 16px}
+  .ck,.imp,.acts{display:none!important}
+  .av{display:inline-grid;grid-area:av}
+  .who{grid-area:who;display:flex;align-items:center;gap:6px}
+  .who::before{content:"";width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--tc)}
+  .row.t-P3 .who::before{display:none}
+  .when{grid-area:when}
+  .subj{grid-area:subj;padding:2px 0 0}
+  .st{grid-area:st;align-self:end}
+  .row:hover{box-shadow:none}
+  .row:hover .when{visibility:visible}
+  .line1{flex-direction:column;align-items:stretch;gap:4px;white-space:normal}
+  .txt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal}
+  .s{display:block}
+  .dash{display:none}
+  .lbls{order:2;flex-wrap:wrap}
+  .convo{padding:12px 16px 48px}
+  .c-head,.keys{padding-left:0;margin-left:0}
+  .jev,.composer,.nodraft{margin-left:0}
+  .m{grid-template-columns:32px minmax(0,1fr);gap:12px}
+  .m-av{width:32px;height:32px;font-size:14px}
+  .m-time{margin-left:0;flex-basis:100%}
+  .ans-row{grid-template-columns:118px minmax(0,1fr) 52px 36px}
+  .toast{left:16px;right:16px;max-width:none}
+  .set-page{padding:12px 16px 48px}
+  .set-row{grid-template-columns:minmax(0,1fr);gap:6px}
+  .set-k{padding-top:0}
+  .weights{grid-template-columns:minmax(0,1fr)}
+  .weight{grid-template-columns:120px minmax(0,1fr) 32px}
+}
+@media (hover:none){.keys{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="app" id="app">
+  <header class="hdr">
+    <button type="button" class="ib menu-btn" id="menu-btn" aria-label="Main menu"></button>
+    <div class="brand">
+      <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="4" width="28" height="24" rx="7" fill="var(--logo-bg)"/><rect x="8" y="10" width="16" height="3" rx="1.5" fill="var(--tier-P0)"/><rect x="8" y="14.5" width="12" height="3" rx="1.5" fill="var(--tier-P1)"/><rect x="8" y="19" width="8" height="3" rx="1.5" fill="var(--tier-P2)"/></svg>
+      <span class="brand-t">Dealflow</span>
+    </div>
+    <label class="search" id="search"></label>
+    <div class="hdr-r"><span class="sample">Sample data</span><span class="synced" id="synced">Synced 4 min ago</span></div>
+    <button type="button" class="ib" id="gear" data-nav="preferences" aria-label="Settings" title="Settings"></button>
+  </header>
+  <div class="body">
+    <nav class="nav" id="nav" aria-label="Folders and labels"></nav>
+    <main class="pane" id="pane"></main>
+  </div>
+  <div class="scrim" id="scrim" hidden></div>
+  <div class="menu" id="menu" role="menu" hidden></div>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<script>
+(() => {
+const P = {
+  menu:'M3 5.5h14M3 10h14M3 14.5h14',
+  search:'M9 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM13.5 13.5 17 17',
+  close:'M5 5l10 10M15 5 5 15',
+  inbox:'M3 11h4l1 2h4l1-2h4M3 11l2-6h10l2 6v5H3z',
+  eye:'M2 10s3-5.5 8-5.5S18 10 18 10s-3 5.5-8 5.5S2 10 2 10zM10 12.3a2.3 2.3 0 1 0 0-4.6 2.3 2.3 0 0 0 0 4.6z',
+  reply:'M8 5 3 10l5 5M3 10h8a6 6 0 0 1 6 6',
+  star:'M10 2.8l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L2.8 8.1l5-.7z',
+  clock:'M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM10 6v4l2.5 2.5',
+  bookmark:'M5.5 3h9v14L10 13.5 5.5 17z',
+  chat:'M3.5 4.5h13v9h-7l-4 3v-3h-2z',
+  flag:'M5 17V3.5M5 4h9l-2 3.5 2 3.5H5',
+  archive:'M3 4h14v3H3zM4 7v9h12V7M8 10.5h4',
+  stack:'M10 3 3 6.5 10 10l7-3.5zM3 10l7 3.5 7-3.5M3 13.5 10 17l7-3.5',
+  sync:'M16 7a6.5 6.5 0 0 0-11.7-1M4 3v3h3M4 13a6.5 6.5 0 0 0 11.7 1M16 17v-3h-3',
+  chevL:'M12 5l-5 5 5 5',
+  chevR:'M8 5l5 5-5 5',
+  chevD:'M5 8l5 5 5-5',
+  back:'M16 10H4M9 5l-5 5 5 5',
+  mail:'M3 5h14v10H3zM3 5.5l7 5.5 7-5.5',
+  mailOpen:'M3 8.5 10 4l7 4.5V16H3zM3 8.5l7 5 7-5',
+  bolt:'M11 2.5 4.5 11H10l-1 6.5L15.5 9H10z',
+  calendar:'M3.5 5h13v11.5h-13zM3.5 8.5h13M7 3v3.5M13 3v3.5',
+  spark:'M10 3l1.6 4.4L16 9l-4.4 1.6L10 15l-1.6-4.4L4 9l4.4-1.6z',
+  down:'M10 3.5v12.5M5 11l5 5 5-5',
+  file:'M5 3h7l3 3v11H5zM12 3v3h3',
+  copy:'M7 7h9v9H7zM4 13V4h9',
+  check:'M4 10.5l4 4 8-9',
+  dash:'M5 10h10',
+  gear:'M10 12.6a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2zM8.6 2.8h2.8l.4 2a5.6 5.6 0 0 1 1.5.9l1.9-.7 1.4 2.4-1.5 1.3a5.6 5.6 0 0 1 0 1.7l1.5 1.3-1.4 2.4-1.9-.7a5.6 5.6 0 0 1-1.5.9l-.4 2H8.6l-.4-2a5.6 5.6 0 0 1-1.5-.9l-1.9.7-1.4-2.4 1.5-1.3a5.6 5.6 0 0 1 0-1.7L3.4 7.4l1.4-2.4 1.9.7a5.6 5.6 0 0 1 1.5-.9z',
+  ig:'M4 4h12v12H4zM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM13.6 6.4h.01',
+  plus:'M10 4v12M4 10h12',
+  alert:'M10 3 2.5 16.5h15zM10 8.5v3.5M10 14.3h.01',
+  info:'M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM10 9.2v4.6M10 6.6h.01'
+};
+const icon = (n, s = 20) => `<svg class="i" width="${s}" height="${s}" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="${P[n] || ''}"/></svg>`;
+const LABEL_SVG = '<svg class="i lab" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3 5.5A1.5 1.5 0 0 1 4.5 4H13l4 6-4 6H4.5A1.5 1.5 0 0 1 3 14.5z"/></svg>';
+const IMP_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3 5h10l4 5-4 5H3l4-5z"/></svg>';
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s) => document.querySelector(s);
+
+/* ---------- vocabulary from rubric.json ---------- */
+const CATS = {
+  brand_deal:{label:'Brand deal', c:'purple'}, investment:{label:'Investment', c:'green'}, partnership:{label:'Partnership', c:'blue'},
+  customer:{label:'Customer lead', c:'yellow'}, speaking:{label:'Speaking & media', c:'pink'}, vendor:{label:'Vendor pitch', c:'gray'},
+  talent:{label:'Jobs & talent', c:'brown'}, community:{label:'Community', c:'orange'}, personal:{label:'Personal', c:'default'}, noise:{label:'Noise', c:'red'}
+};
+const TIERS = { P0:{label:'Act now', icon:'bolt'}, P1:{label:'This week', icon:'calendar'}, P2:{label:'Worth a look', icon:'spark'}, P3:{label:'Low priority', icon:'down'} };
+const TIER_IDS = ['P0','P1','P2','P3'];
+const STAGES = { new:{label:'New', c:'default'}, shortlisted:{label:'Shortlisted', c:'purple'}, talking:{label:'In talks', c:'blue'}, won:{label:'Won', c:'green'}, passed:{label:'Passed', c:'brown'} };
+const VAL = ['None','Low','Medium','High','Exceptional'];
+const CRED = ['Suspicious','Unknown','Named','Established'];
+const URG = ['None','Flexible','This week','Now'];
+const CHANNELS = [{name:'Instagram'}, {name:'Gmail'}, {name:'Proton Mail', warn:'Proton Mail Bridge is not running'}, {name:'LinkedIn'}];
+const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+/* ---------- sample conversations (fictional, from the app's demo set) ---------- */
+const deals = [
+  {id:'lumen', name:'Lumen Audio', contact:'Priya Nair', role:'Partnerships, Lumen Audio', cat:'brand_deal', tier:'P0', score:88, stage:'new',
+   ch:['Instagram','Gmail','LinkedIn'], value:'₹6,50,000', inr:650000, terms:'1 reel + 2 stories, 30-day usage rights, 50% on signing',
+   due:{when:'Fri, Nov 20', what:'closes its creator slots', order:3}, starred:true, flags:['Wrote on 3 channels'], conf:.93, sig:[.96,3,3,2,.91,.97,.99,.02],
+   brief:'Aria earbuds launch on Dec 2. One reel and two stories for ₹6.5L, half paid on signing. Wants your media kit by Friday.',
+   msgs:[
+    {ch:'Instagram', from:'them', h:5, text:"Hi! Priya here from Lumen Audio's partnerships team. We're launching our Aria earbuds on Dec 2 and would love to work with you on a dedicated reel plus two stories. Budget for the package is ₹6,50,000. Your breakdown of AI note-taking tools is exactly the audience we want. Could you share your media kit by Friday?"},
+    {ch:'Gmail', from:'them', h:4, subject:'Lumen Audio x you: Aria launch proposal', attach:'Lumen_Aria_Creator_Brief.pdf', text:"Hi,\n\nI sent a note on Instagram as well, so apologies for the double touch. Attaching the creator brief for our Aria earbuds launch on December 2.\n\nScope: one dedicated reel, two stories, usage rights for 30 days.\nBudget: ₹6,50,000, with 50% paid on signing.\n\nWe are finalising our creator list by Friday. Could you confirm interest and share your media kit?\n\nBest,\nPriya Nair\nPartnerships, Lumen Audio"},
+    {ch:'LinkedIn', from:'them', h:3, text:"Hi! Following up on my Instagram DM and email about the Lumen Audio Aria launch. I wanted to make sure it reached you, since we close our creator slots this Friday."}
+   ],
+   draft:"Hi Priya, thanks for the brief, and no worries about the double touch. I'm interested in the Aria launch and my media kit is attached.\n\nTwo questions before we lock it: can the stories go live the same day as the reel, and does the 30-day usage cover organic posts only? Happy to confirm by Friday."},
+
+  {id:'northwind', name:'Northwind Cloud', contact:'Arjun Mehta', role:'Head of Brand Partnerships, Northwind Cloud', cat:'brand_deal', tier:'P0', score:84, stage:'talking',
+   ch:['LinkedIn'], value:'$40,000', usd:40000, terms:'3 integrated YouTube videos in Q1',
+   due:{when:'Tue, Nov 24', what:'locks its Q1 creators', order:4}, starred:true, conf:.95, sig:[.95,4,3,3,.88,.98,.97,.01],
+   brief:'Q1 campaign: three integrated YouTube videos for about $40k. Creators get locked by Nov 24, and Arjun asks for Thursday at 4pm IST.',
+   msgs:[
+    {ch:'LinkedIn', from:'them', h:70, text:"Hi, I lead brand partnerships at Northwind Cloud. We're planning a Q1 creator campaign: three integrated YouTube videos, with a budget in the range of $40,000. Your audience of builders is the best fit we've found. Are you open to a call this week?"},
+    {ch:'LinkedIn', from:'me', h:50, text:"Thanks Arjun, happy to explore. What are your timelines?"},
+    {ch:'LinkedIn', from:'them', h:2, text:"We need to lock our creators by November 24, so this week matters. Can you do Thursday at 4pm IST?"}
+   ],
+   draft:"Thursday at 4pm IST works. Before the call, could you send the brief and the posting windows for the three videos? I'd also like to understand what exclusivity you need in the cloud category."},
+
+  {id:'zentrix', name:'Zentrix', contact:'Farah Qureshi', role:'Head of Learning & Development, Zentrix', cat:'customer', tier:'P0', score:74, stage:'new',
+   ch:['Gmail'], value:'₹35,00,000', inr:3500000, terms:'Private AI upskilling batch for ~400 employees in 3 cities, from Q1',
+   conf:.9, sig:[.93,3,3,1,.86,.95,.96,.01],
+   brief:'Wants a private AI upskilling batch for about 400 employees from Q1. Approved budget is around ₹35L; asks for cohort-licence pricing.',
+   msgs:[
+    {ch:'Gmail', from:'them', h:20, subject:'AI upskilling programme for 400 employees', text:"Hello,\n\nI lead L&D at Zentrix. We are evaluating partners for an AI upskilling programme for roughly 400 employees across three cities, starting in Q1.\n\nCould you share pricing for a cohort licence and whether you can run a private batch? Our approved budget is approximately ₹35 lakh.\n\nRegards,\nFarah Qureshi\nHead of Learning & Development, Zentrix"}
+   ],
+   draft:"Hi Farah, thanks for reaching out. Yes, we run private batches. I'll send cohort-licence pricing for 400 seats across three cities, with options for live and self-paced tracks.\n\nWould a 30-minute call next week help us shape the curriculum for your teams?"},
+
+  {id:'ledger', name:'The Ledger Post', contact:'Tanya Bose', role:'Reporter, The Ledger Post', cat:'speaking', tier:'P1', score:68, stage:'new',
+   ch:['Gmail'], value:'', terms:'Feature on creator-led education businesses; 20-minute interview',
+   due:{when:'Thu, Nov 19', what:'files the feature in the morning', order:1}, conf:.88, sig:[.62,2,3,3,.84,.96,.04,.02],
+   review:{reason:'Borderline: 68 is within 3 points of Act now', options:[{label:'Keep in This week'}, {label:'Move to Act now', tier:'P0', score:70}]},
+   brief:'Feature on creator-led education in India; wants your view on cohort economics. Needs 20 minutes before her Thursday-morning filing.',
+   msgs:[
+    {ch:'Gmail', from:'them', h:9, subject:'Interview request: creator-led education businesses', text:"Hi,\n\nI'm a reporter at The Ledger Post working on a feature about creator-led education businesses in India. I'd like to include your perspective on cohort economics.\n\nCould we speak for 20 minutes today or tomorrow? My filing deadline is Thursday morning.\n\nThanks,\nTanya"}
+   ],
+   draft:"Hi Tanya, happy to help with the feature. I can do 20 minutes tomorrow between 11am and 1pm IST. Send an invite with any questions you'd like me to cover."},
+
+  {id:'fjord', name:'Fjord Ventures', contact:'Sara Lindqvist', role:'Partner, Fjord Ventures', cat:'investment', tier:'P1', score:66, stage:'shortlisted',
+   ch:['LinkedIn'], value:'$25k–$50k cheque', terms:'Strategic angel in an AI infrastructure seed round',
+   due:{when:'Mon, Nov 30', what:'closes the seed round', order:5}, conf:.91, sig:[.9,3,3,1,.78,.9,.95,.03],
+   brief:'Co-leading an AI infrastructure seed and offering you a $25k–50k strategic angel allocation. Round closes at the end of the month.',
+   msgs:[
+    {ch:'LinkedIn', from:'them', h:28, text:"Hi, we're co-leading the seed round of an AI infrastructure startup and think you'd be a valuable strategic angel given your reach with developers. Cheques are $25k to $50k and the round closes at the end of the month. Happy to share the memo if useful."}
+   ],
+   draft:"Hi Sara, thanks for thinking of me. Please send the memo and the cap table as it stands. I'd also like to know where you see me helping beyond the cheque."},
+
+  {id:'stackforge', name:'StackForge', contact:'Vikram Iyer', role:'Co-founder, StackForge', cat:'partnership', tier:'P1', score:64, stage:'talking',
+   ch:['Gmail'], value:'50/50 revenue share', terms:'Co-built AI agents course; StackForge distributes to ~200k users',
+   due:{when:'Thu, Nov 19', what:'asked for a 30-minute call', order:2}, conf:.86, sig:[.89,3,3,2,.9,.96,.7,.02],
+   brief:'Co-build an AI agents course: you teach and own the curriculum, they bring labs and ~200k users, 50/50 split. Wants a call Thursday.',
+   msgs:[
+    {ch:'Gmail', from:'them', h:52, subject:'Partnership idea: co-build an AI agents course', text:"Hi,\n\nVikram here, co-founder of StackForge (developer tools, about 200k active users). We keep getting asked for a structured course on building AI agents and you are the person our users already watch.\n\nProposal: we co-create the course, you teach, we distribute to our user base, 50/50 revenue share. Happy to put a doc together if you are open to it."},
+    {ch:'Gmail', from:'me', h:44, text:"Hi Vikram, interesting. What does the content split look like and who owns the audience data?"},
+    {ch:'Gmail', from:'them', h:40, text:"Great questions. You would own the curriculum and the brand; we would provide the labs and infrastructure. Audience data would be shared, and each of us keeps our own list. Can we do a 30 minute call on Thursday to go through it?"}
+   ],
+   draft:"Thursday works. Let's do 30 minutes at 5pm IST. Could you share how many of your users have asked for this, so we can size the first cohort?"},
+
+  {id:'tinkerly', name:'Tinkerly', contact:'Nisha Kapoor', role:'Founder, Tinkerly', cat:'investment', tier:'P1', score:63, stage:'new',
+   ch:['Instagram'], value:'₹4 Cr seed round', terms:'40k MAU · ₹18L MRR · growing 22% a month',
+   conf:.89, sig:[.88,3,2,1,.93,.94,.92,.03],
+   brief:'AI tutor for tier-2 students raising a ₹4 Cr seed with two angels in. Wants you on the cap table and asks to send the deck.',
+   msgs:[
+    {ch:'Instagram', from:'them', h:26, text:"Hey, I'm the founder of Tinkerly, an AI tutor for tier-2 students. 40k monthly actives, ₹18 lakh MRR, growing 22% a month. We're raising a ₹4 Cr seed round and two angels are already in. Your video on edtech distribution shaped our GTM, so I'd love to have you on the cap table. Can I send the deck?"}
+   ],
+   draft:"Hi Nisha, congrats on the traction. Yes, please send the deck, along with retention by cohort and your CAC by channel."},
+
+  {id:'saasconf', name:'SaaSConf Asia', contact:'Michael Chen', role:'Events Director, SaaSConf Asia', cat:'speaking', tier:'P1', score:61, stage:'shortlisted',
+   ch:['LinkedIn'], value:'$5,000 honorarium', usd:5000, terms:'Keynote in Singapore · business-class travel and hotel · ~3,000 attendees',
+   due:{when:'Feb 12–13', what:'keynote in Singapore'}, conf:.92, sig:[.8,3,3,1,.82,.95,.94,.02],
+   brief:'Keynote invite for SaaSConf Asia in Singapore, Feb 12–13. Travel, hotel and a $5k honorarium; about 3,000 founders and operators.',
+   msgs:[
+    {ch:'LinkedIn', from:'them', h:75, text:"We'd love to invite you to keynote SaaSConf Asia in Singapore on February 12-13. We cover business-class travel and hotel, plus an honorarium of $5,000. About 3,000 attendees, mostly founders and operators. Could I send the speaker brief?"}
+   ],
+   draft:"Hi Michael, thanks for the invitation, I'm interested. Please send the speaker brief and the keynote slot timing so I can check my calendar."},
+
+  {id:'dailyfounder', name:'The Daily Founder', contact:'The Daily Founder', role:'Podcast · ~120k downloads a month', cat:'speaking', tier:'P2', score:47, stage:'new',
+   ch:['Instagram'], value:'', terms:'Remote recording, 45 minutes, in December', snoozed:'Sat, Nov 21', conf:.9, sig:[.55,2,2,1,.8,.93,.03,.02],
+   brief:'Podcast guest invite for December on building an audience-first company. Remote, 45 minutes.',
+   msgs:[
+    {ch:'Instagram', from:'them', h:49, text:"Hi! We host The Daily Founder podcast, about 120k downloads a month. We'd love to have you as a guest in December to talk about building an audience-first company. Recording is remote and takes 45 minutes. Would any date in the second week work?"}
+   ]},
+
+  {id:'operator', name:'The Operator', contact:'Kabir Sethi', role:'Writes The Operator newsletter', cat:'partnership', tier:'P2', score:41, stage:'new',
+   ch:['LinkedIn'], value:'', terms:'Newsletter cross-promotion · 85k subscribers', flags:['Preview only'], conf:.52, sig:[.58,2,2,1,.6,.8,.05,.04],
+   review:{reason:'Unsure: Partnership or Vendor pitch', options:[{label:"It's a Partnership"}, {label:"It's a Vendor pitch", category:'vendor', tier:'P3', score:13}]},
+   brief:'Cross-promotion between newsletters (85k subscribers). Only the inbox preview has been collected so far.',
+   msgs:[
+    {ch:'LinkedIn', from:'them', h:1, preview:true, text:"Hey, quick one about a possible cross-promotion between our newsletters. We have 85k subscribers and…"}
+   ]},
+
+  {id:'rohan', name:'Rohan', contact:'Rohan', role:'@rohan.builds · 2.1k followers', cat:'community', tier:'P3', score:14, stage:'new',
+   ch:['Instagram'], value:'', conf:.54, sig:[.18,1,1,0,.7,.9,0,.02],
+   review:{reason:'Unsure: Community or Customer lead', options:[{label:"It's Community"}, {label:"It's a Customer lead", category:'customer', tier:'P2', score:36}]},
+   brief:'Liked the AI agents reel; asks how to start with n8n and which course to take.',
+   msgs:[{ch:'Instagram', from:'them', h:3, text:"bro your last reel on AI agents was fire 🔥 how do I get started with n8n? any course you recommend"}]},
+
+  {id:'editfox', name:'EditFox Studio', contact:'EditFox Studio', role:'Video editing agency', cat:'vendor', tier:'P3', score:9, stage:'new',
+   ch:['Instagram'], value:'', conf:.94, sig:[.08,1,1,1,.12,.6,0,.1],
+   brief:'Editing agency offering a free sample edit. Bumped once.',
+   msgs:[
+    {ch:'Instagram', from:'them', h:30, text:"Hey! We help creators 10x their views with pro video editing and thumbnails. Our team can turn around a reel in 24 hours. Want a free sample edit? Book a call from the link in our bio."},
+    {ch:'Instagram', from:'them', h:6, text:"Just bumping this up. Free sample still on the table!"}
+   ]},
+
+  {id:'growthpilot', name:'GrowthPilot', contact:'Dev Patel', role:'Founder, GrowthPilot · AI SDR for B2B', cat:'vendor', tier:'P3', score:11, stage:'new',
+   ch:['LinkedIn'], value:'', conf:.95, sig:[.1,1,2,0,.15,.7,0,.05],
+   brief:'Selling an AI SDR service and asking for a demo call.',
+   msgs:[{ch:'LinkedIn', from:'them', h:33, text:"Hi, we help founders book 30+ qualified meetings a month using our AI SDR. Our team can set it up in a week. Would you be open to a quick call to see a demo?"}]},
+
+  {id:'ananya', name:'Ananya Rao', contact:'Ananya Rao', role:'Final-year student, computer science', cat:'talent', tier:'P3', score:12, stage:'new',
+   ch:['LinkedIn'], value:'', conf:.97, sig:[.05,1,1,0,.2,.7,0,.01],
+   brief:'Final-year computer science student asking for an internship; resume attached.',
+   msgs:[{ch:'LinkedIn', from:'them', h:58, attach:'Ananya_Rao_Resume.pdf', text:"Respected sir, I am a final-year student looking for an internship in your company. I am a fresher but a quick learner. Please find my resume attached and consider me for any role."}]},
+
+  {id:'megha', name:'Megha S', contact:'Megha S', role:'@megha.s', cat:'community', tier:'P3', score:6, stage:'new',
+   ch:['Instagram'], value:'', conf:.96, sig:[.02,0,1,0,.3,.1,0,.01],
+   brief:'A thank-you note on a recent post.',
+   msgs:[{ch:'Instagram', from:'them', h:14, text:"This!! 🙌 needed to hear it today, thank you"}]},
+
+  {id:'aditya', name:'Aditya Kulkarni', contact:'Aditya Kulkarni', role:'Friend', cat:'personal', tier:'P3', score:29, stage:'new',
+   ch:['Gmail'], value:'', conf:.97, sig:[.03,0,2,2,.95,.95,0,.01],
+   brief:'Asks whether you are in town for dinner on Saturday.',
+   msgs:[{ch:'Gmail', from:'them', h:12, subject:'Dinner Saturday?', text:"Are you in town this weekend? A few of us are doing dinner on Saturday. Tell me if you can make it."}]},
+
+  {id:'alpha', name:'Alpha Signals VIP', contact:'Alpha Signals VIP', role:'@crypto_alpha_signals · 310 followers', cat:'noise', tier:'P3', score:1, stage:'new',
+   ch:['Instagram'], value:'', flags:['Scam risk'], conf:.98, sig:[.01,0,0,3,.02,.4,.6,.98],
+   brief:'Crypto "VIP group" asking for BTC and a wallet link. It also contains text aimed at automated sorters, which raised its scam score.',
+   msgs:[{ch:'Instagram', from:'them', h:8, text:"Congratulations!! You have been selected for our VIP trading group. Guaranteed returns of 40% weekly. Send 0.1 BTC to activate your account and click the link to verify your wallet."}]},
+
+  {id:'phish', name:'Account Security', contact:'Account Security', role:'security@insta-verify-support.example', cat:'noise', tier:'P3', score:0, stage:'new',
+   ch:['Gmail'], value:'', flags:['Scam risk'], conf:.97, sig:[0,0,0,3,.05,.5,0,.97],
+   brief:'Phishing: a fake suspension notice asking for your password and verification code.',
+   msgs:[{ch:'Gmail', from:'them', h:16, subject:'Final warning: your account will be suspended', text:"We detected a violation on your account. Your account will be suspended within 24 hours. To keep access, verify your account now by entering your password and the verification code we sent you at the link below."}]},
+
+  {id:'digest', name:'Growth Digest', contact:'Growth Digest', role:'newsletter@growthdigest.example', cat:'noise', tier:'P3', score:0, stage:'new',
+   ch:['Gmail'], value:'', flags:['Filed without Jev'], conf:null, sig:null,
+   brief:'Newsletter. Filed as Noise from its mailing-list headers, without a Jev call.',
+   msgs:[{ch:'Gmail', from:'them', h:7, subject:'This week in growth: 7 experiments worth stealing', text:"This week: seven growth experiments, a teardown of a viral waitlist, and three tools we tried. View in browser. Unsubscribe."}]},
+
+  {id:'kite', name:'Kite Notes', contact:'Leela Varghese', role:'Creator Marketing, Kite Notes', cat:'brand_deal', tier:'P0', score:81, stage:'won',
+   ch:['Instagram','Gmail'], value:'₹4,20,000', inr:420000, terms:'1 reel + a mention in the next long video',
+   due:{when:'Thu, Nov 26', what:'reel goes live'}, flags:['Wrote on 2 channels'], conf:.94, sig:[.95,3,3,1,.9,.2,.98,.02],
+   brief:'Signed: one reel plus a long-video mention for ₹4.2L. The reel goes live on Nov 26.',
+   msgs:[
+    {ch:'Instagram', from:'them', h:216, text:"Hi! We'd love to bring you on for the Kite Notes 3.0 launch: one reel and a mention in your next long video. Budget is ₹4,20,000. Can I email the brief?"},
+    {ch:'Gmail', from:'me', h:192, text:"Sounds good. Sending over my terms and a posting window."},
+    {ch:'Gmail', from:'them', h:146, subject:'Kite Notes 3.0: signed agreement', attach:'Kite_Notes_Agreement_signed.pdf', text:"Contract signed and attached. Posting on Nov 26 works for us."},
+    {ch:'Gmail', from:'me', h:144, text:"Received, thank you. Talk soon."}
+   ]},
+
+  {id:'brightline', name:'Brightline Bank', contact:'Rahul Menon', role:'Talent Development, Brightline Bank', cat:'customer', tier:'P0', score:78, stage:'won',
+   ch:['Gmail'], value:'₹12,00,000', inr:1200000, terms:'Private AI cohort for 120 managers, starting Jan 8',
+   due:{when:'Fri, Jan 8', what:'cohort kicks off'}, conf:.9, sig:[.94,3,3,1,.88,.3,.97,.01],
+   brief:'Signed: a private AI cohort for 120 managers at ₹12L, starting Jan 8.',
+   msgs:[
+    {ch:'Gmail', from:'them', h:360, subject:'Private batch for our managers', text:"Hi, we'd like a private batch of your AI course for about 120 managers. Could you send a proposal?"},
+    {ch:'Gmail', from:'me', h:336, text:"Happy to. Proposal attached, with a January start."},
+    {ch:'Gmail', from:'them', h:120, text:"Approved on our side. The purchase order is on its way."},
+    {ch:'Gmail', from:'me', h:96, text:"Thank you, Rahul. Kickoff invite for Jan 8 coming shortly."}
+   ]},
+
+  {id:'orbit', name:'Orbit Wallet', contact:'Jay Fernandes', role:'Growth, Orbit Wallet', cat:'brand_deal', tier:'P1', score:55, stage:'passed',
+   ch:['Instagram'], value:'$8,000', usd:8000, terms:'2 reels promoting a crypto exchange sign-up bonus',
+   conf:.87, sig:[.7,2,2,2,.6,.3,.95,.35],
+   brief:'Crypto exchange promo: two reels for $8k. You passed because you do not promote crypto products.',
+   msgs:[
+    {ch:'Instagram', from:'them', h:96, text:"Hey! Orbit Wallet here. Two reels about our sign-up bonus, $8,000. Interested?"},
+    {ch:'Instagram', from:'me', h:72, text:"Thanks Jay, I'll pass on this one. I don't promote crypto products."}
+   ]}
+];
+
+const SUBJ = {
+  lumen:'Lumen Audio x you: Aria launch proposal', northwind:'Paid partnership: Northwind Cloud x you (Q1)', zentrix:'AI upskilling programme for 400 employees',
+  ledger:'Interview request: creator-led education businesses', fjord:'Strategic angel: AI infrastructure seed round', stackforge:'Partnership idea: co-build an AI agents course',
+  tinkerly:'Tinkerly seed round: ₹4 Cr, two angels in', saasconf:'Keynote invitation: SaaSConf Asia, Singapore', dailyfounder:'Guest invite: The Daily Founder podcast',
+  operator:'Newsletter cross-promotion', rohan:'How do I get started with n8n?', editfox:'Free sample edit for your reels', growthpilot:'Book 30+ qualified meetings a month',
+  ananya:'Internship application', megha:'Thank you', aditya:'Dinner Saturday?', alpha:'You have been selected for our VIP trading group',
+  phish:'Final warning: your account will be suspended', digest:'This week in growth: 7 experiments worth stealing', kite:'Kite Notes 3.0: signed agreement',
+  brightline:'Private batch for our managers', orbit:'Two reels about our sign-up bonus'
+};
+const UNREAD = new Set(['lumen','northwind','zentrix','ledger','tinkerly','fjord','saasconf','operator','rohan','alpha','phish','digest','aditya']);
+deals.forEach((d) => {
+  d.subject = SUBJ[d.id] || d.name;
+  d.unread = UNREAD.has(d.id);
+  d.flags = d.flags || [];
+  d.msgs.sort((a, b) => b.h - a.h);
+  const last = d.msgs[d.msgs.length - 1];
+  d.lastH = last.h; d.lastFrom = last.from;
+});
+const byId = (id) => deals.find((d) => d.id === id);
+const isWaiting = (d) => (d.stage === 'shortlisted' || d.stage === 'talking') && d.lastFrom === 'them';
+const live = (d) => d.stage !== 'won' && d.stage !== 'passed';
+
+/* ---------- views = the app's queues ---------- */
+const VIEWS = {
+  inbox:{label:'Inbox', icon:'inbox', tabs:true, filter:(d) => d.stage === 'new' && !d.snoozed},
+  review:{label:'Needs review', icon:'eye', filter:(d) => !!d.review, empty:['Nothing needs a second opinion','Conversations land here when Jev was unsure about a call that would change the priority.']},
+  waiting:{label:'Waiting on me', icon:'reply', sort:'oldest', filter:isWaiting, empty:['Nobody is waiting on you','Shortlisted and in-talks conversations where they wrote last show up here, oldest first.']},
+  starred:{label:'Starred', icon:'star', filter:(d) => !!d.starred, empty:['No starred conversations','Star a conversation with F, or the star at the start of its row.']},
+  snoozed:{label:'Snoozed', icon:'clock', filter:(d) => !!d.snoozed, empty:['Nothing snoozed','Press Z on a conversation to hide it for 3 days.']},
+  shortlist:{label:'Shortlisted', icon:'bookmark', filter:(d) => d.stage === 'shortlisted'},
+  talking:{label:'In talks', icon:'chat', filter:(d) => d.stage === 'talking'},
+  won:{label:'Won', icon:'flag', filter:(d) => d.stage === 'won'},
+  passed:{label:'Passed', icon:'archive', filter:(d) => d.stage === 'passed'},
+  all:{label:'All conversations', icon:'stack', filter:() => true}
+};
+const NAV_MAIN = ['inbox','review','waiting','starred','snoozed','shortlist','talking','won','passed','all'];
+const TAB_EMPTY = {
+  P0:['Nothing needs you right now','Conversations that need an answer in a day or two land here.'],
+  P1:['Nothing for this week','Solid opportunities without a pressing deadline land here.'],
+  P2:['Nothing worth a look','Plausible but unproven conversations land here.'],
+  P3:['Low priority is empty','Fan mail, vendor pitches and noise collect here.']
+};
+function viewDef(key) {
+  if (VIEWS[key]) return VIEWS[key];
+  if (key.startsWith('cat-')) {
+    const c = key.slice(4).replace(/-/g, '_');
+    if (CATS[c]) return {label:CATS[c].label, filter:(d) => d.cat === c};
+  }
+  if (key.startsWith('ch-')) {
+    const ch = CHANNELS.find((x) => slug(x.name) === key.slice(3));
+    if (ch) return {label:ch.name, filter:(d) => d.ch.includes(ch.name), empty:ch.warn ? [`Nothing from ${ch.name} yet`, `${ch.warn}, so nothing has synced. Start Bridge and the next sync picks it up.`] : null};
+  }
+  return null;
+}
+
+const state = { view:'inbox', tier:'P0', q:'', open:null, sel:new Set(), cursor:null, listIds:[], listScroll:0, openMsgs:new Set(), expanded:new Set(), undo:null, menuAnchor:null, synced:'Synced 4 min ago' };
+
+/* ---------- time (sample clock: Wed, Nov 18, 3:10 PM) ---------- */
+const NOW = new Date(2026, 10, 18, 15, 10);
+const at = (h) => new Date(NOW.getTime() - h * 3600e3);
+function agoLong(h) {
+  if (h < 1) return 'just now';
+  if (h < 24) { const n = Math.round(h); return `${n} ${n === 1 ? 'hour' : 'hours'} ago`; }
+  const n = Math.round(h / 24); return `${n} ${n === 1 ? 'day' : 'days'} ago`;
+}
+function listTime(h) {
+  const d = at(h);
+  if (d.toDateString() === NOW.toDateString()) return d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+  return d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+}
+const fullTime = (h) => `${at(h).toLocaleString('en-US', {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})} (${agoLong(h)})`;
+
+/* ---------- small renderers ---------- */
+const lb = (label, c, extra = '') => `<span class="lb c-${c}${extra}">${esc(label)}</span>`;
+const catLb = (d) => lb(CATS[d.cat].label, CATS[d.cat].c);
+const box = (st) => `<span class="box${st === 'true' ? ' on' : st === 'mixed' ? ' mixed' : ''}">${st === 'true' ? icon('check', 14) : st === 'mixed' ? icon('dash', 14) : ''}</span>`;
+const initial = (s) => s.replace(/^The /, '').charAt(0).toUpperCase();
+const pct = (p) => `${Math.round(p * 100)}%`;
+function senders(d) {
+  const me = d.msgs.some((m) => m.from === 'me');
+  const first = d.contact.includes(' ') && d.contact !== d.name ? d.contact.split(' ')[0] : d.contact;
+  return me ? `${first}, me` : d.contact;
+}
+
+/* ---------- list ---------- */
+function currentItems() {
+  let list;
+  if (state.q.trim()) {
+    const q = state.q.trim().toLowerCase();
+    list = deals.filter((d) => [d.name, d.contact, d.role, d.subject, d.brief, CATS[d.cat].label, ...d.msgs.map((m) => m.text)].join(' ').toLowerCase().includes(q));
+  } else {
+    const v = viewDef(state.view) || VIEWS.inbox;
+    list = deals.filter(v.filter);
+    if (v.tabs) list = list.filter((d) => d.tier === state.tier);
+  }
+  const oldest = !state.q && (viewDef(state.view) || {}).sort === 'oldest';
+  return list.sort(oldest ? (a, b) => b.lastH - a.lastH : (a, b) => a.lastH - b.lastH);
+}
+function rowHtml(d) {
+  const checked = state.sel.has(d.id);
+  const lbls = [catLb(d)];
+  if (d.review) lbls.push(lb('Needs review', 'yellow'));
+  if (d.flags.includes('Scam risk')) lbls.push(lb('Scam risk', 'red'));
+  if (d.due && d.due.order && live(d)) lbls.push(`<span class="lb outline">${icon('calendar', 12)}${esc(d.due.when)}</span>`);
+  const last = d.msgs[d.msgs.length - 1];
+  const snippet = isWaiting(d)
+    ? `<span class="nudge">They wrote ${esc(agoLong(d.lastH))}. Reply?</span>`
+    : `<span class="snip">${esc(last.text.replace(/\s+/g, ' '))}</span>`;
+  const att = d.msgs.find((m) => m.attach);
+  const n = d.msgs.length;
+  return `<div class="row t-${d.tier}${d.unread ? ' unread' : ''}${checked ? ' checked' : ''}${state.cursor === d.id ? ' cursor' : ''}" data-open="${d.id}" tabindex="0" aria-label="${esc(`${d.unread ? 'Unread, ' : ''}${senders(d)}, ${d.subject}, ${listTime(d.lastH)}`)}">
+    <button type="button" class="ck" data-check="${d.id}" role="checkbox" aria-checked="${checked}" aria-label="Select ${esc(d.name)}">${box(String(checked))}</button>
+    <button type="button" class="av c-${CATS[d.cat].c}" data-check="${d.id}" aria-label="Select ${esc(d.name)}">${checked ? icon('check', 20) : esc(initial(d.contact))}</button>
+    <button type="button" class="st${d.starred ? ' on' : ''}" data-star="${d.id}" aria-pressed="${!!d.starred}" aria-label="${d.starred ? 'Starred' : 'Not starred'}">${icon('star', 18)}</button>
+    <span class="imp t-${d.tier}" title="${esc(`${TIERS[d.tier].label} · score ${d.score}`)}">${IMP_SVG}</span>
+    <span class="who">${esc(senders(d))}${n > 1 ? `<span class="n">${n}</span>` : ''}</span>
+    <span class="subj"><span class="line1"><span class="lbls">${lbls.join('')}</span><span class="txt"><span class="s">${esc(d.subject)}</span><span class="dash"> - </span>${snippet}</span></span>${att ? `<span class="att">${icon('file', 16)}${esc(att.attach)}</span>` : ''}</span>
+    <span class="when">${esc(listTime(d.lastH))}</span>
+    <span class="acts">
+      <button type="button" class="ib" data-act="shortlisted" data-id="${d.id}" title="Shortlist" aria-label="Shortlist">${icon('bookmark')}</button>
+      <button type="button" class="ib" data-act="passed" data-id="${d.id}" title="Pass" aria-label="Pass">${icon('archive')}</button>
+      <button type="button" class="ib" data-act="snooze" data-id="${d.id}" title="Snooze 3 days" aria-label="Snooze 3 days">${icon('clock')}</button>
+      <button type="button" class="ib" data-act="read" data-id="${d.id}" title="${d.unread ? 'Mark as read' : 'Mark as unread'}" aria-label="${d.unread ? 'Mark as read' : 'Mark as unread'}">${icon(d.unread ? 'mailOpen' : 'mail')}</button>
+    </span>
+  </div>`;
+}
+function renderList() {
+  const items = currentItems();
+  state.listIds = items.map((d) => d.id);
+  [...state.sel].forEach((id) => { if (!state.listIds.includes(id)) state.sel.delete(id); });
+  if (!state.listIds.includes(state.cursor)) state.cursor = state.listIds[0] || null;
+  const v = state.q ? null : (viewDef(state.view) || VIEWS.inbox);
+  const selN = state.sel.size;
+  const all = selN === 0 ? 'false' : selN === items.length ? 'true' : 'mixed';
+  const bulk = [['shortlisted','bookmark','Shortlist'],['passed','archive','Pass'],['snooze','clock','Snooze 3 days'],['read','mailOpen','Mark as read'],['unread','mail','Mark as unread'],['star','star','Star']];
+  const toolbar = `<div class="toolbar">
+    <button type="button" class="ck-all" data-checkall role="checkbox" aria-checked="${all}" aria-label="Select all" ${items.length ? '' : 'disabled'}>${box(all)}</button>
+    <button type="button" class="ib sm" data-menu="select" aria-label="Select options" aria-haspopup="menu">${icon('chevD', 14)}</button>
+    ${selN
+      ? bulk.map(([k, ic, t]) => `<button type="button" class="ib" data-bulk="${k}" title="${t}" aria-label="${t}">${icon(ic)}</button>`).join('') + `<span class="sel-n">${selN} selected</span>`
+      : `<button type="button" class="ib" data-sync title="Sync now" aria-label="Sync now">${icon('sync')}</button>`}
+    <span class="grow"></span>
+    <span class="pager"><span class="pager-t">${items.length ? `1–${items.length} of ${items.length}` : '0 of 0'}</span></span>
+    <button type="button" class="ib" disabled aria-label="Newer">${icon('chevL')}</button>
+    <button type="button" class="ib" disabled aria-label="Older">${icon('chevR')}</button>
+  </div>`;
+  let tabs = '';
+  if (v && v.tabs) {
+    const pool = deals.filter(v.filter);
+    tabs = `<div class="tabs" role="tablist" aria-label="Priority">${TIER_IDS.map((t) => {
+      const inTab = pool.filter((d) => d.tier === t).sort((a, b) => a.lastH - b.lastH);
+      const unread = inTab.filter((d) => d.unread);
+      const on = state.tier === t;
+      const names = [...new Set(unread.map((d) => d.name))].join(', ');
+      return `<button type="button" class="tabx t-${t}${on ? ' on' : ''}" role="tab" aria-selected="${on}" data-tier="${t}">${icon(TIERS[t].icon)}<span class="tab-txt"><span class="tab-l">${TIERS[t].label}${!on && unread.length ? `<span class="newchip">${unread.length} new</span>` : ''}</span>${!on && names ? `<span class="tab-prev">${esc(names)}</span>` : ''}</span></button>`;
+    }).join('')}</div>`;
+  }
+  let body;
+  if (items.length) body = items.map(rowHtml).join('');
+  else {
+    const [t, s] = state.q ? ['No conversations match your search', 'Try a name, a company or a word from the message.']
+      : v.tabs ? TAB_EMPTY[state.tier] : (v.empty || ['Nothing here', 'Conversations you move here will appear in this list.']);
+    body = `<div class="empty">${icon(state.q ? 'search' : 'inbox', 48)}<div class="empty-t">${esc(t)}</div><div>${esc(s)}</div></div>`;
+  }
+  const keep = $('#scroller') ? $('#scroller').scrollTop : state.listScroll;
+  $('#pane').innerHTML = `${toolbar}${tabs}<div class="scroller" id="scroller">
+    <div class="view-title">${esc(state.q ? 'Search results' : v.label)}</div>
+    ${state.q ? `<div class="qbar">${items.length} ${items.length === 1 ? 'result' : 'results'} for “${esc(state.q)}”<button type="button" class="link" data-clearq>Clear search</button></div>` : ''}
+    <div role="list">${body}</div>
+  </div>`;
+  $('#scroller').scrollTop = keep;
+}
+
+/* ---------- conversation ---------- */
+function jevCard(d) {
+  if (!d.sig) return `<section class="jev" aria-label="How Jev sorted this"><div class="jev-h">${icon('spark', 18).replace('class="i"', 'class="i spark"')}<b>Filed without a Jev call</b></div><p class="jev-brief">${esc(d.brief)}</p></section>`;
+  const [opp, val, cred, urg, pers, reply, money, risk] = d.sig;
+  const yn = (x) => (x >= 0.5 ? 'Yes' : 'No');
+  const rows = [
+    ['Category', CATS[d.cat].label, d.conf, true], ['Real opportunity', yn(opp), opp, true], ['Deal value', VAL[val], val / 4, false],
+    ['Sender credibility', CRED[cred], cred / 3, false], ['Urgency', URG[urg], urg / 3, false], ['Written for you', yn(pers), pers, true],
+    ['Reply expected', yn(reply), reply, true], ['States terms', yn(money), money, true], ['Scam risk', risk >= 0.5 ? 'Likely' : 'Unlikely', risk, true, 'risk']
+  ];
+  return `<section class="jev" aria-label="How Jev sorted this">
+    <div class="jev-h">${icon('spark', 18).replace('class="i"', 'class="i spark"')}<b>Sorted by Jev</b><span class="lb t-${d.tier}" style="background:var(--tc);color:var(--chip-on-fg)">${TIERS[d.tier].label}</span><span class="muted">Score ${d.score} · ${pct(d.conf)} sure it is ${esc(CATS[d.cat].label.toLowerCase())}</span></div>
+    <p class="jev-brief">${esc(d.brief)}</p>
+    <div class="sig">
+      <span class="sg">Opportunity <b>${yn(opp)}</b></span><span class="sg">Value <b>${VAL[val]}</b></span><span class="sg">Credibility <b>${CRED[cred]}</b></span>
+      <span class="sg">Urgency <b>${URG[urg]}</b></span><span class="sg">States terms <b>${yn(money)}</b></span><span class="sg${risk >= 0.5 ? ' risk' : ''}">Scam risk <b>${pct(risk)}</b></span>
+    </div>
+    ${d.review ? `<div class="review"><span class="review-t">Your call: ${esc(d.review.reason)}.</span>${d.review.options.map((o, i) => `<button type="button" class="pill sm outline" data-settle="${d.id}:${i}">${esc(o.label)}</button>`).join('')}</div>` : ''}
+    <details class="more"><summary>All 9 answers ${icon('chevD', 16)}</summary>
+      <div class="ans">${rows.map((r) => `<div class="ans-row"><span class="ans-q">${r[0]}</span><span class="ans-a">${esc(r[1])}</span><span class="meter${r[4] ? ' risk' : ''}"><i style="width:${Math.round(r[2] * 100)}%"></i></span><span class="ans-p">${r[3] ? pct(r[2]) : ''}</span></div>`).join('')}</div>
+    </details>
+  </section>`;
+}
+function msgFull(d, m, key, isLast) {
+  const me = m.from === 'me';
+  const name = me ? 'You' : d.contact;
+  return `<article class="m">
+    <span class="m-av ${me ? 'me' : `c-${CATS[d.cat].c}`}" aria-hidden="true">${esc(initial(name))}</span>
+    <div class="m-main">
+      <div class="m-head"${isLast ? '' : ` data-msg="${key}" role="button" tabindex="0" aria-expanded="true"`}><span class="m-name">${esc(name)}</span>${me ? '' : `<span class="m-addr">${esc(d.role)}</span>`}<span class="m-time">${esc(fullTime(m.h))}</span></div>
+      <div class="m-to">${me ? `to ${esc(d.contact)}` : 'to you'} · via ${esc(m.ch)}</div>
+      ${m.subject && m.subject !== d.subject ? `<div class="m-subj">${esc(m.subject)}</div>` : ''}
+      <div class="m-body">${esc(m.text)}</div>
+      ${m.attach ? `<div class="attcard">${icon('file', 22)}<span>${esc(m.attach)}</span></div>` : ''}
+      ${m.preview ? '<div class="hint">Only the inbox preview was collected for this LinkedIn thread. The full conversation arrives the next time the collector opens it.</div>' : ''}
+    </div>
+  </article>`;
+}
+function msgCollapsed(d, m, key) {
+  const me = m.from === 'me';
+  const name = me ? 'You' : d.contact;
+  return `<button type="button" class="m collapsed" data-msg="${key}" aria-expanded="false">
+    <span class="m-av ${me ? 'me' : `c-${CATS[d.cat].c}`}" aria-hidden="true">${esc(initial(name))}</span>
+    <span class="m-main"><span class="m-head"><span class="m-name">${esc(name)}</span><span class="m-time">${esc(listTime(m.h))} (${esc(agoLong(m.h))})</span></span><span class="m-snip">${esc(m.text.replace(/\s+/g, ' '))}</span></span>
+  </button>`;
+}
+function renderConvo() {
+  const d = byId(state.open);
+  const i = state.listIds.indexOf(d.id);
+  const n = state.listIds.length;
+  const parts = [];
+  const total = d.msgs.length;
+  d.msgs.forEach((m, idx) => {
+    const key = `${d.id}:${idx}`;
+    const isLast = idx === total - 1;
+    if (total > 3 && !state.expanded.has(d.id) && idx > 0 && idx < total - 1) {
+      if (idx === 1) parts.push(`<button type="button" class="older" data-expand="${d.id}"><span class="older-n">${total - 2}</span><span>${total - 2} older messages</span></button>`);
+      return;
+    }
+    const open = isLast || !!m.attach || state.openMsgs.has(key);
+    const closedByUser = state.openMsgs.has(`-${key}`);
+    parts.push(open && !closedByUser ? msgFull(d, m, key, isLast) : msgCollapsed(d, m, key));
+  });
+  const lastCh = d.msgs[d.msgs.length - 1].ch;
+  $('#pane').innerHTML = `
+    <div class="toolbar">
+      <button type="button" class="ib" data-back title="Back to ${esc(state.q ? 'search results' : (viewDef(state.view) || VIEWS.inbox).label)}" aria-label="Back to list">${icon('back')}</button>
+      <span class="tsep"></span>
+      <button type="button" class="ib" data-stage="shortlisted" title="Shortlist (S)" aria-label="Shortlist">${icon('bookmark')}</button>
+      <button type="button" class="ib" data-stage="talking" title="Move to In talks (T)" aria-label="Move to In talks">${icon('chat')}</button>
+      <button type="button" class="ib" data-stage="won" title="Mark as won (W)" aria-label="Mark as won">${icon('flag')}</button>
+      <button type="button" class="ib" data-stage="passed" title="Pass (X)" aria-label="Pass">${icon('archive')}</button>
+      <span class="tsep"></span>
+      <button type="button" class="ib" data-snooze title="${d.snoozed ? 'Unsnooze' : 'Snooze 3 days'} (Z)" aria-label="${d.snoozed ? 'Unsnooze' : 'Snooze 3 days'}">${icon('clock')}</button>
+      <button type="button" class="ib" data-unread title="Mark as unread" aria-label="Mark as unread">${icon('mail')}</button>
+      <span class="grow"></span>
+      ${i >= 0 ? `<span class="pager"><span class="pager-t">${i + 1} of ${n}</span></span>` : ''}
+      <button type="button" class="ib" data-pg="-1" aria-label="Newer conversation"${i <= 0 ? ' disabled' : ''}>${icon('chevL')}</button>
+      <button type="button" class="ib" data-pg="1" aria-label="Older conversation"${i < 0 || i >= n - 1 ? ' disabled' : ''}>${icon('chevR')}</button>
+    </div>
+    <div class="scroller" id="cscroll">
+      <div class="convo">
+        <div class="c-head">
+          <h1 class="c-subj">${esc(d.subject)}</h1>
+          ${catLb(d)}${lb(STAGES[d.stage].label, STAGES[d.stage].c)}${d.snoozed ? `<span class="lb outline">${icon('clock', 12)}Snoozed until ${esc(d.snoozed)}</span>` : ''}${d.flags.map((f) => lb(f, f === 'Scam risk' ? 'red' : 'default')).join('')}
+          <span class="grow"></span>
+          <button type="button" class="ib st${d.starred ? ' on' : ''}" data-star="${d.id}" aria-pressed="${!!d.starred}" aria-label="${d.starred ? 'Remove star' : 'Star'}">${icon('star')}</button>
+        </div>
+        ${jevCard(d)}
+        <div class="thread">${parts.join('')}</div>
+        ${d.draft ? `<section class="composer" aria-label="Draft reply">
+          <div class="comp-h">${icon('reply', 18)}<b>Draft reply to ${esc(d.contact)}</b><span>· written by the writer model</span></div>
+          <div class="comp-body" id="draft-text">${esc(d.draft)}</div>
+          <div class="comp-f"><button type="button" class="pill primary" data-copy="${d.id}">${icon('copy', 18)}Copy draft</button><span>Dealflow never sends. Paste it into ${esc(lastCh)} to reply.</span></div>
+        </section>` : `<p class="nodraft">No draft for this one. Drafts are written for conversations that score This week or higher.</p>`}
+        <div class="keys"><span><kbd>S</kbd>Shortlist</span><span><kbd>T</kbd>In talks</span><span><kbd>W</kbd>Won</span><span><kbd>X</kbd>Pass</span><span><kbd>Z</kbd>Snooze</span><span><kbd>F</kbd>Star</span><span><kbd>J</kbd><kbd>K</kbd>Older, newer</span><span><kbd>U</kbd>Back to list</span></div>
+      </div>
+    </div>`;
+}
+
+/* ---------- nav ---------- */
+function renderNav() {
+  const inboxUnread = deals.filter((d) => VIEWS.inbox.filter(d) && d.unread).length;
+  const count = {
+    inbox:[inboxUnread, true], review:[deals.filter(VIEWS.review.filter).length, true], waiting:[deals.filter(isWaiting).length, true],
+    shortlist:[deals.filter(VIEWS.shortlist.filter).length, false], talking:[deals.filter(VIEWS.talking.filter).length, false]
+  };
+  const ni = (key, label, ic, cnt, bold, title) => `<button type="button" class="ni${state.view === key && !state.q ? ' on' : ''}" data-nav="${key}" title="${esc(title || label)}"${state.view === key && !state.q ? ' aria-current="page"' : ''}>${ic}<span class="ni-l">${esc(label)}</span>${cnt ? `<span class="cnt${bold ? '' : ' plain'}">${cnt}</span>` : ''}</button>`;
+  const unreadIn = (f) => deals.filter((d) => f(d) && d.unread).length;
+  $('#nav').innerHTML = `
+    <button type="button" class="cta" data-triage title="Open the first unread conversation, highest priority first">${icon('bolt', 22)}<span>Start triage</span></button>
+    ${NAV_MAIN.map((k) => ni(k, VIEWS[k].label, icon(VIEWS[k].icon), count[k] ? count[k][0] : 0, count[k] ? count[k][1] : false)).join('')}
+    <div class="nh">Labels</div>
+    ${Object.entries(CATS).map(([k, c]) => ni(`cat-${slug(k)}`, c.label, `<span class="c-${c.c}" style="display:inline-flex">${LABEL_SVG}</span>`, unreadIn((d) => d.cat === k), true)).join('')}
+    <div class="nh">Channels</div>
+    ${CHANNELS.map((ch) => ni(`ch-${slug(ch.name)}`, ch.name, `<span class="chdot${ch.warn ? ' warn' : ''}"></span>`, unreadIn((d) => d.ch.includes(ch.name)), true, ch.warn || ch.name)).join('')}
+    <div class="nh"></div>
+    ${ni('preferences', 'Settings', icon('gear'), 0, false)}`;
+}
+function renderSearch() {
+  $('#search').innerHTML = `${icon('search')}<input id="q" type="search" placeholder="Search conversations" autocomplete="off" aria-label="Search conversations"><button type="button" class="ib" data-clearq aria-label="Clear search" hidden id="qclear">${icon('close')}</button>`;
+  const q = $('#q');
+  q.addEventListener('input', () => {
+    state.q = q.value;
+    $('#qclear').hidden = !state.q;
+    state.open = null; state.sel.clear(); state.cursor = null;
+    render();
+  });
+}
+function render() {
+  renderNav();
+  if (state.open && byId(state.open)) renderConvo();
+  else {
+    state.open = null;
+    if (state.view === 'preferences' && !state.q) renderSettings(); else renderList();
+  }
+  $('#synced').textContent = state.synced;
+}
+
+/* ---------- actions ---------- */
+function openConvo(id) {
+  const d = byId(id);
+  if (!d) return;
+  if (!state.open && $('#scroller')) state.listScroll = $('#scroller').scrollTop;
+  state.open = id; state.cursor = id; d.unread = false;
+  render();
+  const c = $('#cscroll'); if (c) c.scrollTop = 0;
+}
+function backToList() {
+  const id = state.open;
+  state.open = null;
+  render();
+  if ($('#scroller')) $('#scroller').scrollTop = state.listScroll;
+  const row = id && document.querySelector(`.row[data-open="${id}"]`);
+  if (row) row.focus({preventScroll:false});
+}
+function snapshot(ds) { return ds.map((d) => [d, {stage:d.stage, snoozed:d.snoozed, unread:d.unread, starred:d.starred, cat:d.cat, tier:d.tier, score:d.score, review:d.review}]); }
+function restore(snap) { snap.forEach(([d, s]) => Object.assign(d, s)); render(); }
+function settleAfter(id, idx) {
+  const list = currentItems();
+  state.listIds = list.map((x) => x.id);
+  if (state.open === id && !state.listIds.includes(id)) {
+    const next = list[Math.min(idx, list.length - 1)];
+    if (next) { state.open = next.id; state.cursor = next.id; next.unread = false; }
+    else state.open = null;
+  }
+  render();
+}
+function applyOne(id, fn, msg) {
+  const d = byId(id);
+  if (!d) return;
+  const snap = snapshot([d]);
+  const idx = state.listIds.indexOf(id);
+  const text = fn(d);
+  settleAfter(id, idx);
+  toast(text || msg, () => restore(snap));
+}
+const setStage = (id, stage) => applyOne(id, (d) => { if (d.stage === stage) return `Already ${STAGES[stage].label.toLowerCase()}`; d.stage = stage; return `“${d.name}” moved to ${STAGES[stage].label}`; });
+const toggleSnooze = (id) => applyOne(id, (d) => { d.snoozed = d.snoozed ? null : 'Sat, Nov 21'; return d.snoozed ? `Snoozed until ${d.snoozed}` : 'Back in your inbox'; });
+function toggleStar(id) {
+  const d = byId(id);
+  if (!d) return;
+  d.starred = !d.starred;
+  render();
+}
+function toggleRead(id) {
+  const d = byId(id);
+  if (!d) return;
+  d.unread = !d.unread;
+  render();
+  toast(d.unread ? 'Marked as unread' : 'Marked as read');
+}
+function settleReview(id, i) {
+  applyOne(id, (d) => {
+    const o = d.review.options[i];
+    if (o.category) d.cat = o.category;
+    if (o.tier) d.tier = o.tier;
+    if (o.score != null) d.score = o.score;
+    d.review = null;
+    return `Filed as ${CATS[d.cat].label}, ${TIERS[d.tier].label}`;
+  });
+}
+function bulk(kind) {
+  const ds = [...state.sel].map(byId).filter(Boolean);
+  if (!ds.length) return;
+  const snap = snapshot(ds);
+  const n = ds.length;
+  const word = n === 1 ? 'conversation' : 'conversations';
+  let msg;
+  if (kind === 'shortlisted' || kind === 'passed') { ds.forEach((d) => { d.stage = kind; }); msg = `${n} ${word} moved to ${STAGES[kind].label}`; }
+  else if (kind === 'snooze') { ds.forEach((d) => { d.snoozed = 'Sat, Nov 21'; }); msg = `${n} ${word} snoozed until Sat, Nov 21`; }
+  else if (kind === 'read') { ds.forEach((d) => { d.unread = false; }); msg = `${n} marked as read`; }
+  else if (kind === 'unread') { ds.forEach((d) => { d.unread = true; }); msg = `${n} marked as unread`; }
+  else if (kind === 'star') { ds.forEach((d) => { d.starred = true; }); msg = `${n} starred`; }
+  state.sel.clear();
+  render();
+  toast(msg, () => restore(snap));
+}
+function selectBy(kind) {
+  const items = state.listIds.map(byId);
+  const pickers = {all:() => true, none:() => false, read:(d) => !d.unread, unread:(d) => d.unread, starred:(d) => d.starred, unstarred:(d) => !d.starred};
+  state.sel = new Set(items.filter(pickers[kind]).map((d) => d.id));
+  renderList();
+}
+function startTriage() {
+  state.q = ''; $('#q').value = ''; $('#qclear').hidden = true;
+  state.view = 'inbox';
+  const pool = deals.filter(VIEWS.inbox.filter);
+  state.tier = TIER_IDS.find((t) => pool.some((d) => d.tier === t && d.unread)) || TIER_IDS.find((t) => pool.some((d) => d.tier === t)) || 'P0';
+  state.sel.clear();
+  const list = currentItems();
+  state.listIds = list.map((d) => d.id);
+  const first = list.find((d) => d.unread) || list[0];
+  toggleNav(false);
+  setHash('inbox');
+  if (first) openConvo(first.id); else render();
+}
+function sync(btn) {
+  if (btn.classList.contains('spin')) return;
+  btn.classList.add('spin');
+  setTimeout(() => {
+    state.synced = 'Synced just now';
+    $('#synced').textContent = state.synced;
+    btn.classList.remove('spin');
+    toast('Up to date. No new conversations since the last sync.');
+  }, 900);
+}
+function copyDraft(id) {
+  const d = byId(id);
+  if (!d || !d.draft) return;
+  const fail = () => {
+    const el = $('#draft-text');
+    if (el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+    toast('Could not copy. The draft is selected, so copy it with your keyboard.');
+  };
+  try { navigator.clipboard.writeText(d.draft).then(() => toast('Draft copied'), fail); } catch (err) { fail(); }
+}
+function page(dir) {
+  const i = state.listIds.indexOf(state.open);
+  const next = state.listIds[i + dir];
+  if (i >= 0 && next) openConvo(next);
+}
+function moveCursor(dir) {
+  const ids = state.listIds;
+  if (!ids.length) return;
+  let i = ids.indexOf(state.cursor);
+  i = Math.max(0, Math.min(ids.length - 1, (i < 0 ? -1 : i) + dir));
+  state.cursor = ids[i];
+  document.querySelectorAll('.row.cursor').forEach((r) => r.classList.remove('cursor'));
+  const row = document.querySelector(`.row[data-open="${state.cursor}"]`);
+  if (row) { row.classList.add('cursor'); row.scrollIntoView({block:'nearest'}); }
+}
+
+let toastTimer = 0;
+function toast(msg, undo, label = 'Undo') {
+  const t = $('#toast');
+  state.undo = undo || null;
+  t.innerHTML = `<span>${esc(msg)}</span>${undo ? `<button type="button" data-undo>${esc(label)}</button>` : ''}`;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; state.undo = null; }, 5000);
+}
+function runUndo() { const u = state.undo; state.undo = null; $('#toast').hidden = true; if (u) u(); }
+
+/* ---------- settings (mirrors the app's Settings page, with sample values) ---------- */
+const GUIDES = {
+  sorting: [
+    'Create an API key at openrouter.ai/keys and add a little credit. Sorting a conversation costs a fraction of a cent.',
+    'Paste the key above and press Save, then Test connection.',
+    'Describe yourself under “What matters to you”. Jev judges every message against that description.',
+    'Press Re-sort everything whenever you change the policy.'
+  ],
+  instagram: [
+    'Your Instagram account must be a professional (creator or business) account.',
+    'At developers.facebook.com create a Business app and add the Instagram product, then open Instagram > API setup.',
+    'If it says “API setup with Unified login”: generate the token (it starts with EAA) with the permissions instagram_basic and instagram_manage_messages, and copy your Instagram account ID (the number starting with 1784). Paste both above.',
+    'If it says “API setup with Instagram login”: add your account and press Generate token (it starts with IGAA). Paste it above and leave the account ID blank.',
+    'Save, then Test.',
+    'In the Instagram app: Settings > Messages and story replies > Message controls > Connected tools > Allow access to messages.',
+    "For another Instagram account press Add another account and repeat. One Unified login token can serve several accounts in the same business portfolio: paste the same token with each account's own ID."
+  ],
+  gmail: [
+    'Sign in with Google (recommended). Once, in Google Cloud (console.cloud.google.com): pick or create a project and enable the Gmail API for it (APIs & Services > Library > Gmail API > Enable).',
+    'Set up its OAuth consent screen (Google Auth Platform: Branding, then Audience). On a Workspace domain choose Internal. For personal Gmail choose External and add your address as a test user; Google then asks you to sign in again every 7 days until the app is published.',
+    'Under Clients (or Credentials), create an OAuth client of type Desktop app. Paste its client ID and secret into the two Google fields above and press Save changes.',
+    'Press Sign in with Google on the account, choose the Google account and allow “Read your email”. You come back here signed in. For another inbox press Add another account and sign in again.',
+    'The other way is an app password: turn on 2-Step Verification, create one at myaccount.google.com/apppasswords, enter the address and its 16 characters above, then Save and test. It opens the whole mailbox to whoever holds it, and a Workspace admin can switch app passwords off.'
+  ],
+  email: [
+    'Install Proton Mail Bridge (it needs a paid Proton plan), sign in and let its first sync finish.',
+    "In Bridge, open your account's Mailbox details. Copy the username, the IMAP port and the Bridge password into the fields above.",
+    'In Bridge: Settings > Advanced settings > Export TLS certificates. Paste the full path of the exported cert.pem above.',
+    'Save, then Test connection. Bridge must be running whenever the app syncs.'
+  ],
+  linkedin: [
+    'LinkedIn has no inbox API, so Claude reads your inbox in your own logged-in Chrome and hands the messages to this app.',
+    'Ask Claude: “Run the LinkedIn sync in collectors/linkedin-sync.md”. It reads the inbox list, opens only threads that changed, and sets unread threads back to unread.',
+    'Opening a thread can show the sender a read receipt. Ask for “preview only” to avoid opening any thread.',
+    "For your full history, request LinkedIn's data export (Settings > Data privacy > Get a copy of your data) and import messages.csv below."
+  ]
+};
+const RUBRIC = {
+  owner:'The owner is a creator and founder with a large online audience. Inbound messages arrive from brands, agencies, founders, investors, event organisers, vendors, job seekers and fans. The owner wants to spend time only on real commercial or strategic opportunities and to see them the moment they arrive.',
+  tiers:{P0:70, P1:52, P2:32},
+  cats:[
+    {id:'brand_deal', v:1.0, crit:"A company, brand or agency wants to pay for access to the owner's audience or content: sponsorships, paid integrations, ad reads, affiliate, ambassador or UGC deals, paid campaigns."},
+    {id:'investment', v:0.95, crit:'Money for equity in either direction: a founder pitching their startup for funding or an angel cheque, or an investor or fund offering to invest in, co-invest with, or share a deal with the owner.'},
+    {id:'partnership', v:0.8, crit:'A proposal to build, launch, distribute or co-create something together between peers: joint ventures, product integrations, co-marketing, content collaborations, cross-promotion. No one is simply buying or selling a service.'},
+    {id:'customer', v:0.75, crit:"Someone who wants to buy from the owner: questions about the owner's products, courses, cohorts, consulting, or a team or corporate purchase."},
+    {id:'speaking', v:0.6, crit:'An invitation to speak, keynote, join a panel or podcast, be interviewed, judge an event, or a request from a journalist or publication.'},
+    {id:'vendor', v:0.12, crit:'The sender is selling their own service or product TO the owner: agencies, freelancers, editors, developers, lead generation, SaaS tools, cold outreach offering services.'},
+    {id:'talent', v:0.15, crit:'Job seekers, internship or referral requests, CVs, or recruiters approaching the owner about a role.'},
+    {id:'community', v:0.08, crit:'Fans, students and followers: thanks, compliments, questions, requests for advice, mentorship or feedback, with no commercial proposal.'},
+    {id:'personal', v:0.3, crit:'Friends, family, colleagues and people the owner already knows, talking about anything that is not a new deal.'},
+    {id:'noise', v:0.0, crit:'Spam, scams, crypto or forex schemes, phishing, mass-blast messages, automated notifications, newsletters, receipts, and messages with no real content.'}
+  ]
+};
+const SET_SECTIONS = [
+  {id:'sorting', label:'Sorting', title:'Sorting: Jev on OpenRouter'},
+  {id:'instagram', label:'Instagram', title:'Instagram'},
+  {id:'gmail', label:'Gmail', title:'Gmail'},
+  {id:'email', label:'Proton Mail', title:'Proton Mail Bridge'},
+  {id:'linkedin', label:'LinkedIn', title:'LinkedIn'},
+  {id:'general', label:'General', title:'General'}
+];
+const FIELDS = {
+  sorting:[
+    {key:'OPENROUTER_API_KEY', label:'OpenRouter API key', kind:'secret', hint:'7f3c', help:'Create one at openrouter.ai/keys. Without it, conversations are sorted by keyword rules.'},
+    {key:'JEV_MODEL', label:'Decision model', kind:'text', value:'typesafe/jev-1.14', help:'The model that sorts. typesafe/jev-1.14, or ~typesafe/jev-latest to follow new releases.'},
+    {key:'WRITER_MODEL', label:'Writer model (optional)', kind:'text', value:'anthropic/claude-haiku-5.5', placeholder:'a chat model slug from openrouter.ai/models', help:'Jev returns decisions, not text. Set a chat model here to get one-line briefs and reply drafts.'},
+    {key:'TRIAGE_CONCURRENCY', label:'Parallel requests', kind:'number', value:'4', min:1, max:16, help:'How many conversations are sent to Jev at once.'}
+  ],
+  instagram:[
+    {key:'INSTAGRAM_API_VERSION', label:'Graph API version', kind:'text', value:'v27.0'},
+    {key:'INSTAGRAM_MAX_CONVERSATIONS', label:'Conversations on first sync', kind:'number', value:'200', min:10, max:2000, help:'How many recent conversations the first sync reads.'},
+    {key:'INSTAGRAM_ENRICH_PROFILES', label:'Look up follower count and verification', kind:'toggle', value:true, help:'One extra request per new person. Feeds the credibility signal.'},
+    {key:'INSTAGRAM_API_HOST', label:'API host', kind:'choice', value:'graph.instagram.com', options:[['graph.instagram.com','graph.instagram.com'],['graph.facebook.com','graph.facebook.com']], advanced:true, help:'Chosen automatically from the token. Only used for a token with an unrecognised prefix.'}
+  ],
+  gmail:[
+    {key:'GOOGLE_CLIENT_ID', label:'Google OAuth client ID', kind:'text', value:'000000000000-example.apps.googleusercontent.com', placeholder:'…apps.googleusercontent.com', help:'For Sign in with Google: from your own OAuth client in Google Cloud (Credentials, type Desktop app). See the steps below.'},
+    {key:'GOOGLE_CLIENT_SECRET', label:'Google OAuth client secret', kind:'secret', hint:'Qx4t', help:'From the same OAuth client. Removing it stops every Google-signed-in account from syncing.'},
+    {key:'GMAIL_LOOKBACK_DAYS', label:'Days of history on first sync', kind:'number', value:'30', min:1, max:3650},
+    {key:'GMAIL_PRIMARY_ONLY', label:'Only the Primary tab', kind:'toggle', value:false, help:'Skip what Gmail files under Promotions, Social, Updates and Forums. Off, everything in the inbox is read and newsletters are filed as Noise for free.'},
+    {key:'GMAIL_SYNC_SENT', label:'Read sent mail too', kind:'toggle', value:true, help:'So the app knows which conversations you already answered.'},
+    {key:'GMAIL_MAILBOXES', label:'Mailboxes to read', kind:'text', value:'INBOX', advanced:true, help:'Comma-separated. A Gmail label is a mailbox of the same name, e.g. INBOX,Deals.'}
+  ],
+  email:[
+    {key:'PROTON_USERNAME', label:'Username', kind:'text', value:'you@proton.me', placeholder:'you@proton.me', help:'Shown in Bridge under your account > Mailbox details.'},
+    {key:'PROTON_BRIDGE_PASSWORD', label:'Bridge password', kind:'secret', hint:'b2d0', help:'The password Bridge generated, from Mailbox details. Not your Proton account password.'},
+    {key:'PROTON_IMAP_PORT', label:'IMAP port', kind:'number', value:'1143', min:1, max:65535, help:'Bridge uses 1143 unless it was taken. Copy the port Bridge shows.'},
+    {key:'PROTON_CERT_PATH', label:'Bridge certificate (cert.pem)', kind:'text', value:'/Users/you/bridge/cert.pem', placeholder:'/Users/you/bridge/cert.pem', help:'Bridge > Settings > Advanced settings > Export TLS certificates. The only certificate the app will trust.'},
+    {key:'PROTON_MAILBOXES', label:'Mailboxes to read', kind:'text', value:'INBOX', help:'Comma-separated. Folders look like Folders/Deals, labels like Labels/Press.'},
+    {key:'PROTON_SENT_MAILBOX', label:'Sent mailbox', kind:'text', value:'Sent', help:'Read so the app knows what you already answered. Leave blank to skip.'},
+    {key:'PROTON_LOOKBACK_DAYS', label:'Days of history on first sync', kind:'number', value:'30', min:1, max:3650},
+    {key:'PROTON_IMAP_SECURITY', label:'Connection security', kind:'choice', value:'starttls', options:[['starttls','STARTTLS (Bridge default)'],['ssl','SSL']], advanced:true},
+    {key:'PROTON_IMAP_HOST', label:'IMAP host', kind:'text', value:'127.0.0.1', advanced:true}
+  ],
+  linkedin:[
+    {key:'LINKEDIN_STALE_HOURS', label:'Flag as stale after (hours)', kind:'number', value:'24', min:1, max:720, help:'How long since the last collection before the app warns you.'}
+  ],
+  general:[
+    {key:'OWNER_NAME', label:'Your name', kind:'text', value:'', help:'As it appears on LinkedIn. Used to tell your messages from theirs in the export, and to sign email drafts.'},
+    {key:'OWNER_EMAILS', label:'Your email addresses', kind:'text', value:'', placeholder:'you@proton.me, alias@pm.me', help:'Comma-separated, including aliases. Mail from these counts as sent by you.'},
+    {key:'SYNC_INTERVAL_MINUTES', label:'Sync every (minutes)', kind:'number', value:'15', min:0, max:1440, help:'0 turns the timer off: sync only when you press Sync.'},
+    {key:'AUTO_TRIAGE', label:'Sort new messages automatically', kind:'toggle', value:true},
+    {key:'DEALFLOW_PORT', label:'App port', kind:'number', value:'4747', min:1024, max:65535, advanced:true, help:'Takes effect the next time the app is started.'}
+  ]
+};
+const ROLES = {
+  instagram:[
+    {role:'token', label:'Access token', kind:'secret', help:'From your Meta app dashboard, under Instagram > API setup. Unified login gives a token starting with EAA (also fill in the account ID); Instagram login gives one starting with IGAA. The app detects which.'},
+    {role:'userId', label:'Instagram account ID', kind:'text', placeholder:'1784…', help:'Needed with a Unified login token (EAA…): the number shown next to this account in the Meta app dashboard. Leave blank for an IGAA token.'},
+    {role:'label', label:'Name in the inbox (optional)', kind:'text', placeholder:'e.g. Personal, Brand', help:"Shown on this account's conversations. Defaults to its @username."}
+  ],
+  gmail:[
+    {role:'address', label:'Gmail address', kind:'text', placeholder:'you@gmail.com', help:'A Gmail or Google Workspace address.'},
+    {role:'password', label:'App password', kind:'secret', help:'Only if you are not using Sign in with Google: 16 characters from myaccount.google.com/apppasswords, made for this address. Not your Google password. 2-Step Verification must be on.'},
+    {role:'label', label:'Name in the inbox (optional)', kind:'text', placeholder:'e.g. Work, Personal', help:"Shown on this account's conversations. Defaults to the address."}
+  ]
+};
+const REDIRECT_URI = 'http://127.0.0.1:4747/oauth/google/callback';
+const chCount = (name) => deals.filter((d) => d.ch.includes(name)).length;
+const ACCTS = {
+  instagram:[
+    {slot:1, title:'@yourhandle', label:'Creator', userId:'17841405550001', hint:'a91e', n:0},
+    {slot:2, title:'@yourbrand', label:'Brand', userId:'17841405550002', hint:'a91e', n:0}
+  ],
+  gmail:[{slot:1, title:'Work', address:'work@yourdomain.example', label:'Work', google:true, n:0}]
+};
+ACCTS.instagram[0].n = Math.ceil(chCount('Instagram') * 2 / 3);
+ACCTS.instagram[1].n = chCount('Instagram') - ACCTS.instagram[0].n;
+ACCTS.gmail[0].n = chCount('Gmail');
+const SS = { section:'sorting', dirty:new Set(), results:{}, busy:'', fresh:{instagram:[], gmail:[]}, freshVals:{}, removing:new Set(), policyDirty:false, nextSlot:{instagram:3, gmail:2} };
+
+function setStatus(id) {
+  if (id === 'sorting') return {dot:'ok', line:`Using ${FIELDS.sorting[1].value}${FIELDS.sorting[2].value ? `, with ${FIELDS.sorting[2].value} for briefs and drafts` : ''}. 0 waiting to be sorted. Spent $0.0004 this month, $0.0004 in total over ${deals.filter((d) => d.sig).length} calls.`};
+  if (id === 'instagram' || id === 'gmail') {
+    const list = ACCTS[id];
+    if (!list.length) return {dot:'off', line:'No account connected yet.'};
+    const total = list.reduce((s, a) => s + a.n, 0);
+    return {dot:'ok', line:`${list.length} account${list.length > 1 ? 's' : ''}, ${total} conversation${total === 1 ? '' : 's'}. Last synced 4 minutes ago.`};
+  }
+  if (id === 'email') return {dot:'bad', error:true, line:'Could not connect to Proton Mail Bridge at 127.0.0.1:1143. Make sure Bridge is running, then press Test connection.'};
+  if (id === 'linkedin') return {dot:'ok', line:`${chCount('LinkedIn')} conversations. Last collected 1 hour ago.`};
+  return {dot:'', line:''};
+}
+function control(f, id, key) {
+  const d = `data-key="${esc(key)}"`;
+  if (f.kind === 'toggle') return `<label class="sw"><input type="checkbox" id="${id}" role="switch" ${d}${f.value ? ' checked' : ''}><span class="sw-t" aria-hidden="true"></span></label>`;
+  if (f.kind === 'choice') return `<select class="in" id="${id}" ${d}>${f.options.map(([v, l]) => `<option value="${esc(v)}"${v === f.value ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+  if (f.kind === 'secret') return `<input class="in" type="password" id="${id}" ${d} autocomplete="new-password" spellcheck="false" value="${esc(f.typed || '')}" placeholder="${esc(f.hint ? `Saved, ends in ${f.hint}. Paste a new one to replace it` : 'Not set')}">`;
+  return `<input class="in" type="${f.kind === 'number' ? 'number' : 'text'}" id="${id}" ${d} spellcheck="false" autocomplete="off"${f.min != null ? ` min="${f.min}"` : ''}${f.max != null ? ` max="${f.max}"` : ''} placeholder="${esc(f.placeholder || '')}" value="${esc(f.value || '')}">`;
+}
+function fieldRow(f, sec) {
+  const id = `f-${f.key}`;
+  return `<div class="set-row"><label class="set-k" for="${id}">${esc(f.label)}</label><div class="set-v">${control(f, id, `${sec}|${f.key}`)}${f.help ? `<p class="help">${esc(f.help)}</p>` : ''}</div></div>`;
+}
+function fieldRows(sec) {
+  const basic = FIELDS[sec].filter((f) => !f.advanced);
+  const adv = FIELDS[sec].filter((f) => f.advanced);
+  return basic.map((f) => fieldRow(f, sec)).join('')
+    + (adv.length ? `<details class="set-adv"><summary>Advanced ${icon('chevD', 16)}</summary>${adv.map((f) => fieldRow(f, sec)).join('')}</details>` : '');
+}
+const resLine = (r) => (r ? `<p class="res ${r.ok ? 'ok' : 'bad'}" role="status">${icon(r.ok ? 'check' : 'alert', 16)}<span>${esc(r.msg)}</span></p>` : '');
+function acctBlock(kind, a, fresh) {
+  const key = `${kind}:${a.slot}`;
+  const removing = SS.removing.has(key);
+  const google = kind === 'gmail' && !!a.google;
+  const title = fresh ? `New ${kind === 'instagram' ? 'Instagram' : 'Gmail'} account` : a.title;
+  let status = '';
+  if (removing) status = `Will be disconnected when you save. Conversations already pulled stay in your inbox.${google ? ' The Google sign-in is withdrawn too.' : ''}`;
+  else if (!fresh && !google && !a.hint) status = 'Incomplete: fill in the missing field and save.';
+  else if (!fresh) status = a.notSynced ? 'Saved. Not synced yet.' :`${google ? 'Signed in with Google, read-only. ' : ''}${a.n} conversation${a.n === 1 ? '' : 's'}. Last synced 4 minutes ago.`;
+  const vals = fresh ? (SS.freshVals[key] || {}) : a;
+  const fields = removing ? '' : ROLES[kind].filter((r) => !(google && r.role === 'password')).map((r) => {
+    const id = `f-${kind}-${a.slot}-${r.role}`;
+    const f = {...r, value:vals[r.role] || '', typed:vals[`typed_${r.role}`] || '', hint:!fresh && r.kind === 'secret' ? a.hint : ''};
+    return `<div class="fld"><label for="${id}">${esc(r.label)}</label>${control(f, id, `acct:${kind}:${a.slot}:${r.role}`)}${r.help ? `<p class="help">${esc(r.help)}</p>` : ''}</div>`;
+  }).join('');
+  const testing = SS.busy === `test:${key}`;
+  const actions = removing ? '' : `<div class="set-act">${kind === 'gmail' ? `<button type="button" class="pill sm ${google ? 'outline' : 'primary'}" data-google="${a.slot}"${SS.busy ? ' disabled' : ''}>${google ? 'Sign in again' : 'Sign in with Google'}</button>` : ''}<button type="button" class="pill sm outline" data-test="${key}"${SS.busy ? ' disabled' : ''}>${testing ? 'Testing…' : fresh || SS.dirty.has(kind) ? 'Save and test' : 'Test'}</button></div>`;
+  const rm = `<button type="button" class="link" data-rmacct="${key}"${fresh ? ' data-fresh="1"' : ''}>${fresh ? 'Cancel' : removing ? 'Keep it' : 'Remove account'}</button>`;
+  return `<section class="acct${removing ? ' removing' : ''}" aria-label="${esc(title)}">
+    <div class="acct-h">${icon(kind === 'instagram' ? 'ig' : 'mail', 18)}<h3>${esc(title)}</h3><span class="grow"></span>${rm}</div>
+    ${status ? `<p class="acct-s">${esc(status)}</p>` : ''}${fields}${actions}${resLine(SS.results[key])}
+  </section>`;
+}
+function acctsPanel(kind) {
+  const blocks = ACCTS[kind].map((a) => acctBlock(kind, a, false)).concat(SS.fresh[kind].map((slot) => acctBlock(kind, {slot}, true)));
+  const total = ACCTS[kind].length + SS.fresh[kind].length;
+  return `<div class="accts">${blocks.join('')}<button type="button" class="pill sm outline" data-addacct="${kind}"${total >= 8 ? ' disabled' : ''}>${icon('plus', 18)}Add another account</button></div>`;
+}
+function googlePanel() {
+  return `<section class="set-block"><h3>Sign in with Google (recommended)</h3>
+    <p class="help wide">Dealflow asks Google for one permission, “Read your email” (gmail.readonly). It cannot send, delete or change anything, no password is stored, and you can withdraw it at any time at myaccount.google.com/permissions. An app password, by contrast, opens the whole mailbox.</p>
+    <div class="fld"><label for="g-redirect">Redirect URI</label><div class="copyrow"><input class="in" id="g-redirect" type="text" readonly value="${REDIRECT_URI}"><button type="button" class="pill sm outline" data-copyuri>${icon('copy', 16)}Copy</button></div>
+    <p class="help">A Desktop app client needs nothing here. Only if you use a Web application client, add this exact address under its Authorized redirect URIs.</p></div>
+  </section>`;
+}
+function policyPanel() {
+  return `<section class="set-block"><h3>What matters to you</h3>
+    <div class="fld"><label for="pol-owner">About you</label><textarea class="in ta" id="pol-owner" rows="4" data-key="pol:owner">${esc(RUBRIC.owner)}</textarea>
+      <p class="help">Who you are and what you want from inbound messages. This goes to Jev with every conversation, so be specific: your work, audience size, the deals you want, the ones you never take.</p></div>
+    <div class="fld"><span class="fld-l">How much each category is worth</span>
+      <div class="weights">${RUBRIC.cats.map((c) => `<div class="weight"><label for="w-${c.id}">${esc(CATS[c.id].label)}</label><input type="range" min="0" max="100" step="5" id="w-${c.id}" value="${Math.round(c.v * 100)}" data-key="pol:w:${c.id}" data-out="o-${c.id}"><output id="o-${c.id}" for="w-${c.id}">${Math.round(c.v * 100)}</output></div>`).join('')}</div>
+      <p class="help">Higher means conversations of that kind rise in the queue. Noise at 0 keeps spam at the bottom.</p></div>
+    <div class="fld"><span class="fld-l">Score needed for each priority</span>
+      <div class="cutoffs">${['P0','P1','P2'].map((t) => `<label class="cutoff" for="cut-${t}"><span>${TIERS[t].label}</span><input class="in" type="number" min="0" max="100" id="cut-${t}" value="${RUBRIC.tiers[t]}" data-key="pol:cut:${t}"></label>`).join('')}</div>
+      <p class="help">Scores run from 0 to 100. Anything below the last number is Low.</p></div>
+    <details class="set-adv"><summary>How Jev recognises each category ${icon('chevD', 16)}</summary>
+      <p class="help">Jev returns probabilities, not explanations, so these descriptions are what steer it. Keep them concrete and non-overlapping.</p>
+      ${RUBRIC.cats.map((c) => `<div class="fld"><label for="crit-${c.id}">${esc(CATS[c.id].label)}</label><textarea class="in ta" rows="2" id="crit-${c.id}" data-key="pol:crit:${c.id}">${esc(c.crit)}</textarea></div>`).join('')}
+    </details>
+    <div class="set-act"><button type="button" class="pill primary" data-savepolicy${SS.policyDirty ? '' : ' disabled'}>Save policy</button><button type="button" class="pill outline" data-resort>${icon('sync', 18)}Re-sort everything</button></div>
+  </section>`;
+}
+function linkedinPanel() {
+  return `<section class="set-block"><h3>Import your history</h3>
+    <p class="help wide">LinkedIn's data export contains every message with exact timestamps. Importing it is safe to repeat and merges with what Claude collects.</p>
+    <div class="import">
+      <div class="fld"><label for="li-file">messages.csv</label><input type="file" accept=".csv,text/csv" id="li-file" class="file"></div>
+      <div class="fld"><label for="li-days">Only the last (days)</label><input class="in" type="number" min="1" max="3650" id="li-days" value="365"></div>
+      <button type="button" class="pill outline" data-import>Import</button>
+    </div>
+  </section>`;
+}
+function sectionBody(id) {
+  const sec = SET_SECTIONS.find((s) => s.id === id);
+  const st = setStatus(id);
+  const dirty = SS.dirty.has(id);
+  const res = SS.results[id];
+  const showStatus = st.line && !(st.error && res);
+  const testable = id === 'sorting' || id === 'email';
+  const syncable = id === 'instagram' || id === 'gmail' || id === 'email';
+  const multi = id === 'instagram' || id === 'gmail';
+  let html = `<div class="set-head"><h2>${esc(sec.title)}</h2>${showStatus ? `<p class="set-status${st.error ? ' error' : ''}">${st.dot ? `<span class="sdot ${st.dot}"></span>` : ''}<span>${esc(st.line)}</span></p>` : ''}</div>`;
+  html += `<form class="set-form" data-form="${id}" novalidate autocomplete="off">`;
+  if (multi) html += `${acctsPanel(id)}<h3 class="set-sub">For every ${id === 'gmail' ? 'Gmail' : 'Instagram'} account</h3>`;
+  html += fieldRows(id);
+  html += `<div class="set-act"><button type="submit" class="pill primary" data-save="${id}"${dirty && !SS.busy ? '' : ' disabled'}>${SS.busy === 'save' ? 'Saving…' : 'Save changes'}</button>`;
+  if (testable) html += `<button type="button" class="pill outline" data-test="${id}"${SS.busy ? ' disabled' : ''}>${SS.busy === `test:${id}` ? 'Testing…' : dirty ? 'Save and test' : 'Test connection'}</button>`;
+  if (syncable) html += `<button type="button" class="pill outline" data-syncch="${id}"${dirty ? ' disabled title="Save your changes first"' : ''}>${icon('sync', 18)}Sync now</button>`;
+  html += `</div></form>${resLine(res)}`;
+  if (id === 'gmail') html += googlePanel();
+  if (id === 'sorting') html += policyPanel();
+  if (id === 'linkedin') html += linkedinPanel();
+  if (GUIDES[id]) html += `<section class="set-block"><h3>${id === 'linkedin' ? 'How LinkedIn is collected' : 'How to set this up'}</h3><ol class="guide">${GUIDES[id].map((s) => `<li>${esc(s)}</li>`).join('')}</ol></section>`;
+  if (id === 'general') html += `<section class="set-block"><h3>Where things live</h3><p class="help wide">Settings are saved to the .env file in the Dealflow folder (readable only by you). The sorting policy is rubric.json. Messages are stored in one database file on this computer. This app only reads: it never sends a message or changes anything in your accounts.</p><div class="set-act"><button type="button" class="pill outline" data-cleardemo>Remove sample conversations</button></div></section>`;
+  return html;
+}
+function renderSettings() {
+  const id = SS.section;
+  const old = $('#sscroll');
+  const keep = old && old.dataset.sec === id ? old.scrollTop : 0;
+  $('#pane').innerHTML = `
+    <div class="toolbar"><button type="button" class="ib" data-nav="inbox" aria-label="Back to inbox" title="Back to inbox">${icon('back')}</button><h1 class="set-title">Settings</h1></div>
+    <div class="tabs set-tabs" role="tablist" aria-label="Settings sections">${SET_SECTIONS.map((s) => {
+      const st = setStatus(s.id);
+      const word = st.dot === 'bad' ? 'needs attention' : st.dot === 'ok' ? 'connected' : 'not connected';
+      return `<button type="button" class="set-tab${s.id === id ? ' on' : ''}" role="tab" aria-selected="${s.id === id}" data-set="${s.id}"${st.dot ? ` aria-label="${esc(`${s.label}, ${word}`)}"` : ''}>${esc(s.label)}${st.dot ? `<span class="sdot ${st.dot}" aria-hidden="true"></span>` : ''}</button>`;
+    }).join('')}</div>
+    <div class="scroller" id="sscroll" data-sec="${id}"><div class="set-page">
+      <p class="set-note">${icon('info', 16)}Example settings with sample values. The buttons show what the app does; nothing here is saved or connected.</p>
+      ${sectionBody(id)}
+    </div></div>`;
+  $('#sscroll').scrollTop = keep;
+}
+function markDirty(sec) {
+  SS.dirty.add(sec);
+  const save = document.querySelector(`[data-save="${sec}"]`);
+  if (save && !SS.busy) save.disabled = false;
+  document.querySelectorAll(`[data-test="${sec}"], [data-test^="${sec}:"]`).forEach((b) => { if (!SS.busy) b.textContent = 'Save and test'; });
+  const sync = document.querySelector(`[data-syncch="${sec}"]`);
+  if (sync) { sync.disabled = true; sync.title = 'Save your changes first'; }
+}
+function onSettingsInput(e) {
+  const el = e.target;
+  if (!(el instanceof Element) || !el.closest('#sscroll')) return;
+  const k = el.dataset.key;
+  if (!k) return;
+  const val = el.type === 'checkbox' ? el.checked : el.value;
+  if (k.startsWith('pol:')) {
+    const [, what, cid] = k.split(':');
+    if (what === 'owner') RUBRIC.owner = val;
+    else if (what === 'w') { RUBRIC.cats.find((c) => c.id === cid).v = Number(val) / 100; const out = document.getElementById(el.dataset.out); if (out) out.textContent = val; }
+    else if (what === 'cut') RUBRIC.tiers[cid] = Number(val);
+    else if (what === 'crit') RUBRIC.cats.find((c) => c.id === cid).crit = val;
+    SS.policyDirty = true;
+    const b = document.querySelector('[data-savepolicy]'); if (b) b.disabled = false;
+    return;
+  }
+  if (k.startsWith('acct:')) {
+    const [, kind, slot, role] = k.split(':');
+    const saved = ACCTS[kind].find((a) => String(a.slot) === slot);
+    const store = saved || (SS.freshVals[`${kind}:${slot}`] = SS.freshVals[`${kind}:${slot}`] || {});
+    store[el.type === 'password' ? `typed_${role}` : role] = val;
+    markDirty(kind);
+    return;
+  }
+  const [sec, key] = k.split('|');
+  const f = FIELDS[sec].find((x) => x.key === key);
+  if (f.kind === 'secret') f.typed = val; else f.value = val;
+  markDirty(sec);
+}
+function saveSection(id, thenTest) {
+  if (SS.dirty.has(id) || SS.fresh[id] && SS.fresh[id].length || [...SS.removing].some((k) => k.startsWith(`${id}:`))) {
+    if (ACCTS[id]) {
+      ACCTS[id] = ACCTS[id].filter((a) => !SS.removing.has(`${id}:${a.slot}`));
+      ACCTS[id].forEach((a) => ['token', 'password'].forEach((r) => { if (a[`typed_${r}`]) { a.hint = a[`typed_${r}`].slice(-4); delete a[`typed_${r}`]; } }));
+      SS.fresh[id].forEach((slot) => {
+        const v = SS.freshVals[`${id}:${slot}`] || {};
+        const secret = v.typed_token || v.typed_password || '';
+        ACCTS[id].push({slot, title:id === 'gmail' ? (v.label || v.address || `Gmail account ${slot}`) : (v.label || `Instagram account ${slot}`), label:v.label || '', userId:v.userId || '', address:v.address || '', hint:secret ? secret.slice(-4) : '', n:0, notSynced:true, google:false});
+        delete SS.freshVals[`${id}:${slot}`];
+      });
+      SS.fresh[id] = [];
+      [...SS.removing].forEach((k) => { if (k.startsWith(`${id}:`)) SS.removing.delete(k); });
+    }
+    FIELDS[id].forEach((f) => { if (f.kind === 'secret' && f.typed) { f.hint = f.typed.slice(-4); f.typed = ''; } });
+    SS.dirty.delete(id);
+    Object.keys(SS.results).forEach((k) => { if (k === id || k.startsWith(`${id}:`)) delete SS.results[k]; });
+    toast('Saved (example only, nothing is written)');
+  }
+  if (thenTest) { testIt(thenTest); return; }
+  renderSettings();
+}
+function testResult(key) {
+  if (key === 'sorting') return {ok:true, msg:'Connected. OpenRouter accepted the key and Jev answered.'};
+  if (key === 'email') return {ok:false, msg:'Could not connect to Proton Mail Bridge at 127.0.0.1:1143. Make sure Bridge is running, then test again.'};
+  const [kind, slot] = key.split(':');
+  const a = ACCTS[kind].find((x) => String(x.slot) === slot);
+  if (kind === 'instagram') return a && a.hint ? {ok:true, msg:`Connected as ${a.title}. Messages can be read.`} : {ok:false, msg:'Paste an access token first, then test again.'};
+  return a && (a.google || a.hint) ? {ok:true, msg:`${a.google ? 'Signed in as' : 'Connected to'} ${a.address || a.title}. Mail can be read.`} : {ok:false, msg:'Sign in with Google, or enter the address and an app password, then test again.'};
+}
+function testIt(key) {
+  SS.busy = `test:${key}`;
+  delete SS.results[key];
+  renderSettings();
+  setTimeout(() => { SS.busy = ''; SS.results[key] = testResult(key); renderSettings(); }, 800);
+}
+function settingsClick(el) {
+  const tab = el.closest('[data-set]'); if (tab) { SS.section = tab.dataset.set; renderSettings(); return true; }
+  const test = el.closest('[data-test]');
+  if (test) {
+    const key = test.dataset.test;
+    const sec = key.split(':')[0];
+    const freshKey = key.includes(':') && SS.fresh[sec] && SS.fresh[sec].includes(Number(key.split(':')[1]));
+    if (SS.dirty.has(sec) || freshKey) saveSection(sec, key); else testIt(key);
+    return true;
+  }
+  const add = el.closest('[data-addacct]');
+  if (add) { const kind = add.dataset.addacct; SS.fresh[kind].push(SS.nextSlot[kind]++); renderSettings(); return true; }
+  const rm = el.closest('[data-rmacct]');
+  if (rm) {
+    const key = rm.dataset.rmacct;
+    const [kind, slot] = key.split(':');
+    if (rm.dataset.fresh) { SS.fresh[kind] = SS.fresh[kind].filter((s) => String(s) !== slot); delete SS.freshVals[key]; }
+    else if (SS.removing.has(key)) SS.removing.delete(key);
+    else { SS.removing.add(key); SS.dirty.add(kind); }
+    renderSettings();
+    return true;
+  }
+  if (el.closest('[data-google]')) { toast('In the app, this opens Google’s sign-in page, then brings you back here signed in.'); return true; }
+  if (el.closest('[data-copyuri]')) {
+    const done = () => toast('Redirect URI copied');
+    const fail = () => { const i = $('#g-redirect'); i.focus(); i.select(); toast('Could not copy. The address is selected, so copy it with your keyboard.'); };
+    try { navigator.clipboard.writeText(REDIRECT_URI).then(done, fail); } catch (err) { fail(); }
+    return true;
+  }
+  const sy = el.closest('[data-syncch]');
+  if (sy) { toast(`In the app, this syncs ${SET_SECTIONS.find((s) => s.id === sy.dataset.syncch).label} now.`); return true; }
+  if (el.closest('[data-savepolicy]')) {
+    SS.policyDirty = false;
+    renderSettings();
+    toast('Policy saved. Re-sort to apply it to existing conversations.', () => toast(`In the app, this re-sorts all ${deals.length} conversations with Jev.`), 'Re-sort');
+    return true;
+  }
+  if (el.closest('[data-resort]')) { toast(`In the app, this re-sorts all ${deals.length} conversations with Jev.`); return true; }
+  if (el.closest('[data-import]')) {
+    const f = $('#li-file');
+    if (!f || !f.files.length) toast("Choose messages.csv from LinkedIn's export first");
+    else toast(`In the app, this imports ${f.files[0].name} and merges it with what Claude collects.`);
+    return true;
+  }
+  if (el.closest('[data-cleardemo]')) { toast('In the app, this removes the sample conversations and keeps your real ones.'); return true; }
+  return false;
+}
+document.addEventListener('input', onSettingsInput);
+document.addEventListener('change', onSettingsInput);
+document.addEventListener('submit', (e) => {
+  const form = e.target instanceof Element && e.target.closest('[data-form]');
+  if (!form) return;
+  e.preventDefault();
+  saveSection(form.dataset.form);
+});
+
+/* ---------- menu ---------- */
+const menu = $('#menu');
+function openMenu(anchor) {
+  const items = [['all','All'],['none','None'],['read','Read'],['unread','Unread'],['starred','Starred'],['unstarred','Unstarred']];
+  menu.innerHTML = items.map(([k, l]) => `<button type="button" class="mi" role="menuitem" data-pick="${k}">${l}</button>`).join('');
+  menu.hidden = false;
+  const ar = $('#app').getBoundingClientRect();
+  const r = anchor.getBoundingClientRect();
+  menu.style.top = `${r.bottom - ar.top + 2}px`;
+  menu.style.left = `${Math.max(8, r.left - ar.left - 28)}px`;
+  state.menuAnchor = anchor;
+  menu.querySelector('.mi').focus({preventScroll:true});
+}
+function closeMenu() {
+  if (menu.hidden) return;
+  menu.hidden = true;
+  const a = state.menuAnchor; state.menuAnchor = null;
+  if (a && document.contains(a)) a.focus({preventScroll:true});
+}
+
+/* ---------- navigation ---------- */
+const isMobile = () => window.matchMedia('(max-width:720px)').matches;
+function toggleNav(force) {
+  const app = $('#app');
+  const open = force == null ? !app.classList.contains('nav-open') : force;
+  app.classList.toggle('nav-open', open);
+  $('#scrim').hidden = !open;
+}
+function setHash(key) { try { if (location.hash.slice(1) !== key) location.hash = key; } catch (err) { /* optional */ } }
+function goView(key) {
+  if (!viewDef(key) && key !== 'preferences') key = 'inbox';
+  state.view = key; state.q = ''; state.open = null; state.sel.clear(); state.cursor = null; state.listScroll = 0;
+  const q = $('#q'); if (q) { q.value = ''; $('#qclear').hidden = true; }
+  toggleNav(false);
+  render();
+  if ($('#scroller')) $('#scroller').scrollTop = 0;
+  setHash(key);
+}
+window.addEventListener('hashchange', () => {
+  const h = location.hash.slice(1);
+  if ((viewDef(h) || h === 'preferences') && (h !== state.view || state.open)) goView(h);
+});
+
+/* ---------- events ---------- */
+document.addEventListener('click', (e) => {
+  const el = e.target instanceof Element ? e.target : null;
+  if (!el) return;
+  const pk = el.closest('[data-pick]'); if (pk) { const k = pk.dataset.pick; closeMenu(); selectBy(k); return; }
+  const mb = el.closest('[data-menu]'); if (mb) { if (!menu.hidden && state.menuAnchor === mb) closeMenu(); else openMenu(mb); return; }
+  if (!el.closest('#menu')) closeMenu();
+  if (el.closest('[data-undo]')) { runUndo(); return; }
+  if (el.closest('#menu-btn')) { if (isMobile()) toggleNav(); else $('#app').classList.toggle('rail'); return; }
+  if (el.closest('#scrim')) { toggleNav(false); return; }
+  if (el.closest('[data-clearq]')) { state.q = ''; $('#q').value = ''; $('#qclear').hidden = true; render(); $('#q').focus(); return; }
+  const ck = el.closest('[data-check]'); if (ck) { const id = ck.dataset.check; state.sel.has(id) ? state.sel.delete(id) : state.sel.add(id); renderList(); return; }
+  if (el.closest('[data-checkall]')) { state.sel = state.sel.size ? new Set() : new Set(state.listIds); renderList(); return; }
+  const sr = el.closest('[data-star]'); if (sr) { toggleStar(sr.dataset.star); return; }
+  const ac = el.closest('[data-act]');
+  if (ac) {
+    const {act, id} = ac.dataset;
+    if (act === 'snooze') toggleSnooze(id); else if (act === 'read') toggleRead(id); else setStage(id, act);
+    return;
+  }
+  const bk = el.closest('[data-bulk]'); if (bk) { bulk(bk.dataset.bulk); return; }
+  const sy = el.closest('[data-sync]'); if (sy) { sync(sy); return; }
+  if (el.closest('[data-triage]')) { startTriage(); return; }
+  const tb = el.closest('[data-tier]'); if (tb) { state.tier = tb.dataset.tier; state.sel.clear(); state.cursor = null; renderList(); $('#scroller').scrollTop = 0; return; }
+  const nv = el.closest('[data-nav]'); if (nv) { goView(nv.dataset.nav); return; }
+  if (el.closest('[data-back]')) { backToList(); return; }
+  const stg = el.closest('[data-stage]'); if (stg) { setStage(state.open, stg.dataset.stage); return; }
+  if (el.closest('[data-snooze]')) { toggleSnooze(state.open); return; }
+  if (el.closest('[data-unread]')) { const d = byId(state.open); d.unread = true; backToList(); toast('Marked as unread'); return; }
+  const pg = el.closest('[data-pg]'); if (pg) { page(+pg.dataset.pg); return; }
+  const ex = el.closest('[data-expand]'); if (ex) { state.expanded.add(ex.dataset.expand); renderConvo(); return; }
+  const mg = el.closest('[data-msg]');
+  if (mg) {
+    const key = mg.dataset.msg;
+    if (mg.classList.contains('collapsed')) { state.openMsgs.add(key); state.openMsgs.delete(`-${key}`); }
+    else { state.openMsgs.delete(key); state.openMsgs.add(`-${key}`); }
+    const sc = $('#cscroll').scrollTop; renderConvo(); $('#cscroll').scrollTop = sc;
+    return;
+  }
+  const st = el.closest('[data-settle]'); if (st) { const [id, i] = st.dataset.settle.split(':'); settleReview(id, +i); return; }
+  const cp = el.closest('[data-copy]'); if (cp) { copyDraft(cp.dataset.copy); return; }
+  if (el.closest('#sscroll, .set-tabs') && settingsClick(el)) return;
+  const op = el.closest('[data-open]'); if (op) openConvo(op.dataset.open);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (!menu.hidden && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    const items = [...menu.querySelectorAll('.mi')];
+    const i = items.indexOf(document.activeElement);
+    items[e.key === 'ArrowDown' ? Math.min(items.length - 1, i + 1) : Math.max(0, i - 1)].focus();
+    e.preventDefault();
+    return;
+  }
+  if (e.key === 'Escape') {
+    if (!menu.hidden) { closeMenu(); return; }
+    if (e.target.id === 'q') { e.target.blur(); return; }
+    if ($('#app').classList.contains('nav-open')) { toggleNav(false); return; }
+    if (state.open) backToList();
+    return;
+  }
+  const t = e.target;
+  if ((t.matches && t.matches('input, textarea, select')) || e.metaKey || e.ctrlKey || e.altKey) return;
+  if ((e.key === 'Enter' || e.key === ' ') && t.dataset && t.dataset.msg && !t.matches('button')) { t.click(); e.preventDefault(); return; }
+  if (e.key === 'Enter' && t.classList && t.classList.contains('row')) { openConvo(t.dataset.open); e.preventDefault(); return; }
+  const k = e.key.toLowerCase();
+  if (k === '/') { e.preventDefault(); $('#q').focus(); return; }
+  if (state.view === 'preferences' && !state.q && !state.open) return;
+  if (k === 'j' || k === 'k') { e.preventDefault(); if (state.open) page(k === 'j' ? 1 : -1); else moveCursor(k === 'j' ? 1 : -1); return; }
+  if ((k === 'o' || e.key === 'Enter') && !state.open && state.cursor) { e.preventDefault(); openConvo(state.cursor); return; }
+  if (k === 'u' && state.open) { e.preventDefault(); backToList(); return; }
+  const target = state.open || state.cursor;
+  if (!target) return;
+  const map = {s:'shortlisted', t:'talking', w:'won', x:'passed'};
+  if (map[k]) { e.preventDefault(); setStage(target, map[k]); return; }
+  if (k === 'z') { e.preventDefault(); toggleSnooze(target); return; }
+  if (k === 'f') { e.preventDefault(); toggleStar(target); }
+});
+document.addEventListener('scroll', (e) => { if (!menu.hidden && !menu.contains(e.target)) closeMenu(); }, true);
+window.addEventListener('resize', () => { closeMenu(); if (!isMobile()) toggleNav(false); });
+
+$('#menu-btn').innerHTML = icon('menu', 22);
+$('#gear').innerHTML = icon('gear', 22);
+renderSearch();
+const start = location.hash.slice(1);
+if (viewDef(start) || start === 'preferences') state.view = start;
+render();
+})();
+</script>

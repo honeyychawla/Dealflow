@@ -1,0 +1,18 @@
+# Never shared: credentials, messages, sign-in sessions
+.env
+.env.*
+!.env.example
+data/
+data-test/
+*.pem
+*.db
+*.db-wal
+*.db-shm
+linkedin-payload*.json
+messages.csv
+
+# Local clutter
+__pycache__/
+*.pyc
+.DS_Store
+.claude/
